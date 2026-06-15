@@ -1,0 +1,53 @@
+{
+  "config": {
+    "abort": {
+      "already_configured": "O dispositivo já está configurado"
+    },
+    "error": {
+      "cannot_connect": "Falha na ligação",
+      "invalid_auth": "Autenticação inválida",
+      "unknown": "Erro inesperado",
+      "invalid_url_format": "Formato de URL inválido",
+      "privilege_missing": "O utilizador não tem privilégios suficientes (System - HA node sync)",
+      "connect_timeout": "Tempo limite de ligação esgotado",
+      "cannot_connect_ssl": "Falha de SSL (Certificado autoassinado?)",
+      "url_redirect": "URL incorreta (redirecionamento)"
+    },
+    "step": {
+      "user": {
+        "data": {
+          "url": "URL",
+          "username": "Nome de utilizador",
+          "name": "Nome do Firewall",
+          "password": "Senha",
+          "verify_ssl": "Verificar certificado SSL"
+        },
+        "title": "Ligar ao firewall / roteador pfSense"
+      }
+    }
+  },
+  "options": {
+    "error": {
+      "cannot_connect": "Falha na ligação",
+      "unknown": "Erro inesperado"
+    },
+    "step": {
+      "init": {
+        "data": {
+          "scan_interval": "Intervalo de varrimento (segundos)",
+          "device_tracker_enabled": "Ativar rastreio de dispositivos",
+          "device_tracker_scan_interval": "Intervalo de varrimento do rastreador (segundos)",
+          "device_tracker_consider_home": "Tempo para considerar em casa (segundos)"
+        },
+        "description": "Configure os intervalos globais de consulta e as definições de rastreio de dispositivos para o seu firewall pfSense."
+      },
+      "device_tracker": {
+        "description": "Escolha quais dispositivos de rede deseja rastrear como um rastreador de dispositivos no Home Assistant.",
+        "data": {
+          "devices": "Dispositivos a rastrear"
+        }
+      }
+    }
+  },
+  "title": "pfSense"
+}

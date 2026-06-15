@@ -1,0 +1,53 @@
+{
+  "config": {
+    "abort": {
+      "already_configured": "Il dispositivo è già configurato"
+    },
+    "error": {
+      "cannot_connect": "Connessione fallita",
+      "invalid_auth": "Autenticazione non valida",
+      "unknown": "Errore imprevisto",
+      "invalid_url_format": "Formato URL non valido",
+      "privilege_missing": "L'utente non ha privilegi sufficienti (System - HA node sync)",
+      "connect_timeout": "Tempo scaduto per la connessione",
+      "cannot_connect_ssl": "Errore SSL (Certificato autofirmato?)",
+      "url_redirect": "URL errato (reindirizzamento)"
+    },
+    "step": {
+      "user": {
+        "data": {
+          "url": "URL",
+          "username": "Nome utente",
+          "name": "Nome del Firewall",
+          "password": "Password",
+          "verify_ssl": "Verifica certificato SSL"
+        },
+        "title": "Connettiti al firewall / router pfSense"
+      }
+    }
+  },
+  "options": {
+    "error": {
+      "cannot_connect": "Connessione fallita",
+      "unknown": "Errore imprevisto"
+    },
+    "step": {
+      "init": {
+        "data": {
+          "scan_interval": "Intervallo di scansione (secondi)",
+          "device_tracker_enabled": "Abilita il tracciamento dei dispositivi",
+          "device_tracker_scan_interval": "Intervallo di scansione del tracciatore (secondi)",
+          "device_tracker_consider_home": "Tempo per considerare in casa (secondi)"
+        },
+        "description": "Configura gli intervalli di polling globali e le impostazioni di tracciamento dei dispositivi per il tuo firewall pfSense."
+      },
+      "device_tracker": {
+        "description": "Scegli quali dispositivi di rete desideri tracciare come tracciatore di dispositivi in Home Assistant.",
+        "data": {
+          "devices": "Dispositivi da tracciare"
+        }
+      }
+    }
+  },
+  "title": "pfSense"
+}

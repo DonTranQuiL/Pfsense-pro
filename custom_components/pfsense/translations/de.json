@@ -1,0 +1,53 @@
+{
+  "config": {
+    "abort": {
+      "already_configured": "Gerät ist bereits konfiguriert"
+    },
+    "error": {
+      "cannot_connect": "Verbindung fehlgeschlagen",
+      "invalid_auth": "Ungültige Authentifizierung",
+      "unknown": "Unerwarteter Fehler",
+      "invalid_url_format": "Ungültiges URL-Format",
+      "privilege_missing": "Benutzer hat unzureichende Rechte (System - HA node sync)",
+      "connect_timeout": "Verbindungs-Timeout",
+      "cannot_connect_ssl": "SSL-Fehler (Selbstsigniertes Zertifikat?)",
+      "url_redirect": "Falsche URL (Weiterleitung)"
+    },
+    "step": {
+      "user": {
+        "data": {
+          "url": "URL",
+          "username": "Benutzername",
+          "name": "Firewall-Name",
+          "password": "Kennwort",
+          "verify_ssl": "SSL-Zertifikat überprüfen"
+        },
+        "title": "Verbindung mit der pfSense Firewall / Router herstellen"
+      }
+    }
+  },
+  "options": {
+    "error": {
+      "cannot_connect": "Verbindung fehlgeschlagen",
+      "unknown": "Unerwarteter Fehler"
+    },
+    "step": {
+      "init": {
+        "data": {
+          "scan_interval": "Abfrageintervall (Sekunden)",
+          "device_tracker_enabled": "Geräte-Tracker aktivieren",
+          "device_tracker_scan_interval": "Abfrageintervall für Geräte-Tracker (Sekunden)",
+          "device_tracker_consider_home": "Zeitspanne bis Gerät als abwesend gilt (Sekunden)"
+        },
+        "description": "Konfigurieren Sie die globalen Abfrageintervalle und Geräte-Tracking-Einstellungen für Ihre pfSense-Firewall."
+      },
+      "device_tracker": {
+        "description": "Wählen Sie aus, welche Netzwerkgeräte Sie als Geräte-Tracker in Home Assistant überwachen möchten.",
+        "data": {
+          "devices": "Zu überwachende Geräte"
+        }
+      }
+    }
+  },
+  "title": "pfSense"
+}

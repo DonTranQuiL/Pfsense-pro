@@ -1,0 +1,53 @@
+{
+  "config": {
+    "abort": {
+      "already_configured": "设备已配置"
+    },
+    "error": {
+      "cannot_connect": "连接失败",
+      "invalid_auth": "身份验证无效",
+      "unknown": "未知错误",
+      "invalid_url_format": "URL 格式无效",
+      "privilege_missing": "用户权限不足 (System - HA node sync)",
+      "connect_timeout": "连接超时",
+      "cannot_connect_ssl": "SSL 失败 (自签名证书？)",
+      "url_redirect": "URL 错误 (重定向)"
+    },
+    "step": {
+      "user": {
+        "data": {
+          "url": "URL",
+          "username": "用户名",
+          "name": "防火墙名称",
+          "password": "密码",
+          "verify_ssl": "验证 SSL 证书"
+        },
+        "title": "连接到 pfSense 防火墙 / 路由器"
+      }
+    }
+  },
+  "options": {
+    "error": {
+      "cannot_connect": "连接失败",
+      "unknown": "未知错误"
+    },
+    "step": {
+      "init": {
+        "data": {
+          "scan_interval": "扫描间隔 (秒)",
+          "device_tracker_enabled": "启用设备追踪",
+          "device_tracker_scan_interval": "设备追踪扫描间隔 (秒)",
+          "device_tracker_consider_home": "设备在线判定延迟 (秒)"
+        },
+        "description": "配置 pfSense 防火墙 renewed 的全局轮询间隔和设备追踪设置。"
+      },
+      "device_tracker": {
+        "description": "选择您希望在 Home Assistant 中作为设备追踪器进行追踪的网络设备。",
+        "data": {
+          "devices": "要追踪的设备"
+        }
+      }
+    }
+  },
+  "title": "pfSense"
+}

@@ -1,0 +1,53 @@
+{
+  "config": {
+    "abort": {
+      "already_configured": "El dispositivo ya está configurado"
+    },
+    "error": {
+      "cannot_connect": "Error al conectar",
+      "invalid_auth": "Autenticación inválida",
+      "unknown": "Error inesperado",
+      "invalid_url_format": "Formato de URL inválido",
+      "privilege_missing": "El usuario no tiene privilegios suficientes (System - HA node sync)",
+      "connect_timeout": "Tiempo de espera de la conexión agotado",
+      "cannot_connect_ssl": "Fallo de SSL (¿Certificado auto-firmado?)",
+      "url_redirect": "URL incorrecta (redirección)"
+    },
+    "step": {
+      "user": {
+        "data": {
+          "url": "URL",
+          "username": "Nombre de usuario",
+          "name": "Nombre del Cortafuegos",
+          "password": "Contraseña",
+          "verify_ssl": "Verificar certificado SSL"
+        },
+        "title": "Conectarse al cortafuegos / enrutador pfSense"
+      }
+    }
+  },
+  "options": {
+    "error": {
+      "cannot_connect": "Error al conectar",
+      "unknown": "Error inesperado"
+    },
+    "step": {
+      "init": {
+        "data": {
+          "scan_interval": "Intervalo de muestreo (segundos)",
+          "device_tracker_enabled": "Habilitar el seguimiento de dispositivos",
+          "device_tracker_scan_interval": "Intervalo de seguimiento de dispositivos (segundos)",
+          "device_tracker_consider_home": "Tiempo para considerarse en casa (segundos)"
+        },
+        "description": "Configure los intervalos de muestreo globales y la configuración de seguimiento de dispositivos para su cortafuegos pfSense."
+      },
+      "device_tracker": {
+        "description": "Elija qué dispositivos de red desea rastrear como rastreador de dispositivos en Home Assistant.",
+        "data": {
+          "devices": "Dispositivos a rastrear"
+        }
+      }
+    }
+  },
+  "title": "pfSense"
+}

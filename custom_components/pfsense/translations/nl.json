@@ -1,0 +1,53 @@
+{
+  "config": {
+    "abort": {
+      "already_configured": "Apparaat is al geconfigureerd"
+    },
+    "error": {
+      "cannot_connect": "Verbinding mislukt",
+      "invalid_auth": "Ongeldige authenticatie",
+      "unknown": "Onverwachte fout",
+      "invalid_url_format": "Ongeldig URL-formaat",
+      "privilege_missing": "Gebruiker heeft onvoldoende rechten (System - HA node sync)",
+      "connect_timeout": "Verbinding time-out",
+      "cannot_connect_ssl": "SSL-fout (Zelfondertekend certificaat?)",
+      "url_redirect": "Onjuiste URL (omleiding)"
+    },
+    "step": {
+      "user": {
+        "data": {
+          "url": "URL",
+          "username": "Gebruikersnaam",
+          "name": "Firewall Naam",
+          "password": "Wachtwoord",
+          "verify_ssl": "Verifieer SSL-certificaat"
+        },
+        "title": "Verbinden met de pfSense firewall / router"
+      }
+    }
+  },
+  "options": {
+    "error": {
+      "cannot_connect": "Verbinding mislukt",
+      "unknown": "Onverwachte fout"
+    },
+    "step": {
+      "init": {
+        "data": {
+          "scan_interval": "Scaninterval (seconden)",
+          "device_tracker_enabled": "Apparaattracking inschakelen",
+          "device_tracker_scan_interval": "Scaninterval apparaattracking (seconden)",
+          "device_tracker_consider_home": "Tijd totdat apparaat afwezig is (seconden)"
+        },
+        "description": "Configureer de algemene scanintervallen en instellingen voor apparaattracking voor je pfSense-firewall."
+      },
+      "device_tracker": {
+        "description": "Kies welke netwerkapparaten je wilt volgen als device tracker in Home Assistant.",
+        "data": {
+          "devices": "Te volgen apparaten"
+        }
+      }
+    }
+  },
+  "title": "pfSense"
+}

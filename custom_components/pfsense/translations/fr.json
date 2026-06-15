@@ -1,0 +1,53 @@
+{
+  "config": {
+    "abort": {
+      "already_configured": "L'appareil est déjà configuré"
+    },
+    "error": {
+      "cannot_connect": "Échec de la connexion",
+      "invalid_auth": "Authentification invalide",
+      "unknown": "Erreur inattendue",
+      "invalid_url_format": "Format d'URL invalide",
+      "privilege_missing": "L'utilisateur n'a pas de privilèges suffisants (System - HA node sync)",
+      "connect_timeout": "Délai de connexion dépassé",
+      "cannot_connect_ssl": "Échec SSL (Certificat auto-signé?)",
+      "url_redirect": "URL incorrecte (redirection)"
+    },
+    "step": {
+      "user": {
+        "data": {
+          "url": "URL",
+          "username": "Nom d'utilisateur",
+          "name": "Nom du pare-feu",
+          "password": "Mot de passe",
+          "verify_ssl": "Vérifier le certificat SSL"
+        },
+        "title": "Se connecter au pare-feu / routeur pfSense"
+      }
+    }
+  },
+  "options": {
+    "error": {
+      "cannot_connect": "Échec de la connexion",
+      "unknown": "Erreur inattendue"
+    },
+    "step": {
+      "init": {
+        "data": {
+          "scan_interval": "Intervalle de scrutation (secondes)",
+          "device_tracker_enabled": "Activer le suivi des appareils",
+          "device_tracker_scan_interval": "Intervalle de suivi des appareils (secondes)",
+          "device_tracker_consider_home": "Délai avant d'être considéré comme absent (secondes)"
+        },
+        "description": "Configurez les intervalles de scrutation globaux et les paramètres de suivi des appareils pour votre pare-feu pfSense."
+      },
+      "device_tracker": {
+        "description": "Choisissez les appareils réseau que vous souhaitez suivre en tant que tracker d'appareil dans Home Assistant.",
+        "data": {
+          "devices": "Appareils à suivre"
+        }
+      }
+    }
+  },
+  "title": "pfSense"
+}
