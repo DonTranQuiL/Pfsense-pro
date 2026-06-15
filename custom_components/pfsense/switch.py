@@ -37,7 +37,6 @@ async def async_setup_entry(
 
         entities = []
 
-        # New: pfBlockerNG Switch BY TranQuiL aka Malosaaaa
         if dict_get(state, "telemetry.pfblockerng") is not None:
             entity = PfSensePfBlockerNGSwitch(
                 config_entry,
@@ -52,13 +51,13 @@ async def async_setup_entry(
             entities.append(entity)
 
         # filter rules
-        if "filter" in state["config"].keys():
+        if "filter" in state["config"]:
             rules = dict_get(state, "config.filter.rule")
             if isinstance(rules, list):
                 for rule in rules:
                     if not isinstance(rule, dict):
                         continue
-                    if "tracker" not in rule.keys() or "associated-rule-id" in rule.keys():
+                    if "tracker" not in rule or "associated-rule-id" in rule:
                         continue
                     if rule.get("descr") == "Anti-Lockout Rule" or not rule.get("tracker"):
                         continue
@@ -77,7 +76,7 @@ async def async_setup_entry(
                     entities.append(entity)
 
         # nat port forward rules
-        if "nat" in state["config"].keys():
+        if "nat" in state["config"]:
             rules = dict_get(state, "config.nat.rule")
             if isinstance(rules, list):
                 for rule in rules:
@@ -152,14 +151,13 @@ class PfSenseSwitch(PfSenseEntity, SwitchEntity):
         )
 
     @property
-    def is_on(self):
+    def is_on(self) -> bool | None:
         return False
 
     @property
     def extra_state_attributes(self):
         return None
 
-# New: pfBlockerNG Switch Class BY TranQuiL aka Malosaaaa
 class PfSensePfBlockerNGSwitch(PfSenseSwitch):
     @property
     def available(self) -> bool:
@@ -168,9 +166,10 @@ class PfSensePfBlockerNGSwitch(PfSenseSwitch):
         return dict_get(state, "telemetry.pfblockerng") is not None and super().available
 
     @property
-    def is_on(self):
+    def is_on(self) -> bool | None:
         state = self.coordinator.data
-        return dict_get(state, "telemetry.pfblockerng.enabled", False)
+        val = dict_get(state, "telemetry.pfblockerng.enabled", False)
+        return bool(val) if val is not None else None
 
     async def async_turn_on(self, **kwargs):
         client = self._get_pfsense_client()
@@ -201,11 +200,11 @@ class PfSenseFilterSwitch(PfSenseSwitch):
         return self._pfsense_get_rule() is not None and super().available
 
     @property
-    def is_on(self):
+    def is_on(self) -> bool | None:
         rule = self._pfsense_get_rule()
         if rule is None:
-            return STATE_UNKNOWN
-        return "disabled" not in rule.keys()
+            return None
+        return "disabled" not in rule
 
     async def async_turn_on(self, **kwargs):
         rule = self._pfsense_get_rule()
@@ -255,11 +254,11 @@ class PfSenseNatSwitch(PfSenseSwitch):
         return self._pfsense_get_rule() is not None and super().available
 
     @property
-    def is_on(self):
+    def is_on(self) -> bool | None:
         rule = self._pfsense_get_rule()
         if rule is None:
-            return STATE_UNKNOWN
-        return "disabled" not in rule.keys()
+            return None
+        return "disabled" not in rule
 
     async def async_turn_on(self, **kwargs):
         rule = self._pfsense_get_rule()
@@ -310,9 +309,13 @@ class PfSenseServiceSwitch(PfSenseSwitch):
         return service is not None and property_name in service and super().available
 
     @property
-    def is_on(self):
+    def is_on(self) -> bool | None:
         service = self._pfsense_get_service()
-        return service.get(self._pfsense_get_property_name(), STATE_UNKNOWN) if service else STATE_UNKNOWN
+        if not service: return None
+        val = service.get(self._pfsense_get_property_name())
+        if val is None or val == STATE_UNKNOWN:
+            return None
+        return bool(val)
 
     async def async_turn_on(self, **kwargs):
         service = self._pfsense_get_service()

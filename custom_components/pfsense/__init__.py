@@ -1,7 +1,8 @@
-"""Support for pfSense (GOUDEN BUILD - Cache & Veilig)."""
+"""Support for pfSense (GOLDEN BUILD - Cache & Safe)."""
 
 from __future__ import annotations
 
+import asyncio
 import copy
 from datetime import timedelta
 import logging
@@ -10,7 +11,6 @@ import re
 import time
 from typing import Callable
 
-import async_timeout
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     CONF_PASSWORD,
@@ -75,13 +75,13 @@ async def async_load_cache(hass: HomeAssistant, entry_id: str):
 # -------------------------
 
 def dict_get(data: dict, path: str, default=None):
-    pathList = re.split(r"\.", path, flags=re.IGNORECASE)
+    path_list = path.split(".")
     result = data
-    for key in pathList:
+    for key in path_list:
         try:
             key = int(key) if key.isnumeric() else key
             result = result[key]
-        except:
+        except (KeyError, TypeError, IndexError):
             result = default
             break
     return result
@@ -113,23 +113,23 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     async def async_update_data():
         """Fetch data from pfSense."""
         try:
-            async with async_timeout.timeout(scan_interval - 1):
-                # Volledig asynchroon en veilig via de achtergrond thread!
+            async with asyncio.timeout(scan_interval - 1):
+                # Fully asynchronous and safe via the background thread!
                 new_state = await hass.async_add_executor_job(data.update)
                 if not new_state:
-                    raise UpdateFailed("Geen data ontvangen van pfSense")
+                    raise UpdateFailed("No data received from pfSense")
                 
-                # Sla op in de Smart Cache!
+                # Save to the Smart Cache!
                 await async_save_cache(hass, entry.entry_id, new_state)
                 return new_state
                 
         except Exception as err:
-            _LOGGER.warning(f"Fout bij ophalen pfSense: {err}. We proberen de cache te laden...")
+            _LOGGER.warning(f"Error fetching pfSense: {err}. Attempting to load cache...")
             cached_data = await async_load_cache(hass, entry.entry_id)
             if cached_data:
-                data._state = cached_data # Zet de interne state terug
+                data._state = cached_data # Restore internal state
                 return cached_data
-            raise UpdateFailed(f"Fout en geen cache beschikbaar: {err}")
+            raise UpdateFailed(f"Error and no cache available: {err}")
 
     coordinator = DataUpdateCoordinator(
         hass,
@@ -152,15 +152,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         async def async_update_device_tracker_data():
             """Fetch data from pfSense."""
             try:
-                async with async_timeout.timeout(device_tracker_scan_interval - 1):
+                async with asyncio.timeout(device_tracker_scan_interval - 1):
                     new_dt_state = await hass.async_add_executor_job(
                         lambda: device_tracker_data.update({"scope": "device_tracker"})
                     )
                     if not new_dt_state:
-                        raise UpdateFailed("Geen device tracker data ontvangen")
+                        raise UpdateFailed("No device tracker data received")
                     return new_dt_state
             except Exception as err:
-                _LOGGER.warning(f"Device tracker update faalde: {err}")
+                _LOGGER.warning(f"Device tracker update failed: {err}")
                 if device_tracker_data._state:
                     return device_tracker_data._state
                 raise UpdateFailed(err)
@@ -236,13 +236,13 @@ class PfSenseData:
         return self._state
 
     def update(self, opts={}):
-        """Fetch the latest state from pfSense. Draait synchroon in executor."""
+        """Fetch the latest state from pfSense. Runs synchronously in executor."""
         new_state = {}
 
         try:
             current_time = time.time()
             previous_state = copy.deepcopy(self._state)
-            if "previous_state" in previous_state.keys():
+            if "previous_state" in previous_state:
                 del previous_state["previous_state"]
 
             new_state["update_time"] = current_time
@@ -251,7 +251,7 @@ class PfSenseData:
             new_state["system_info"] = self._client.get_system_info()
             new_state["host_firmware_version"] = self._client.get_host_firmware_version()
 
-            if "scope" in opts.keys() and opts["scope"] == "device_tracker":
+            if "scope" in opts and opts["scope"] == "device_tracker":
                 try:
                     new_state["arp_table"] = self._client.get_arp_table(True)
                 except BaseException as err:
@@ -260,9 +260,9 @@ class PfSenseData:
                 try:
                     self._firmware_update_info = self._client.get_firmware_update_info()
                 except Exception:
-                    pass # Timeout of fout, we pakken hem volgende keer
+                    pass # Timeout or error, we'll catch it next time
                 
-                # Haal de telemetrie op (inclusief onze nieuwe WAN IP en pfBlockerNG data!)
+                # Fetch telemetry (including our new WAN IP and pfBlockerNG data!)
                 telemetry_data = self._client.get_telemetry()
 
                 new_state["firmware_update_info"] = self._firmware_update_info
@@ -279,23 +279,23 @@ class PfSenseData:
                     "pending_notices": self._client.get_notices()
                 }
 
-                # Zorg dat de specifieke keys plat in de telemetry dictionary komen te staan voor de sensoren
+                # Ensure specific keys are flattened in the telemetry dictionary for sensors
                 new_state["telemetry"]["wan_ip"] = telemetry_data.get("wan_ip")
                 new_state["telemetry"]["pfblockerng"] = telemetry_data.get("pfblockerng")
 
                 lease_stats = {"total": 0, "online": 0, "idle_offline": 0}
                 for lease in new_state["dhcp_leases"]:
-                    if "act" in lease.keys() and lease["act"] == "expired":
+                    if "act" in lease and lease["act"] == "expired":
                         continue
                     lease_stats["total"] += 1
-                    if "online" in lease.keys():
+                    if "online" in lease:
                         if lease["online"] in ["active", "active/online", "online"]:
                             lease_stats["online"] += 1
                         if lease["online"] in ["offline", "idle/offline", "idle"]:
                             lease_stats["idle_offline"] += 1
                 new_state["dhcp_stats"]["leases"] = lease_stats
 
-                # Bereken PPS en KBPS
+                # Calculate PPS and KBPS
                 scan_interval = self._config_entry.options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
                 update_time = dict_get(new_state, "update_time")
                 previous_update_time = dict_get(new_state, "previous_state.update_time")
@@ -339,7 +339,7 @@ class PfSenseData:
                                 interface[new_property] = int(round(previous_value if previous_value is not None else value, 0))
 
                     for server_name in dict_get(new_state, "telemetry.openvpn.servers", {}).keys():
-                        if server_name not in dict_get(new_state, "previous_state.telemetry.openvpn.servers", {}).keys():
+                        if server_name not in dict_get(new_state, "previous_state.telemetry.openvpn.servers", {}):
                             continue
 
                         server = new_state["telemetry"]["openvpn"]["servers"][server_name]
@@ -360,7 +360,7 @@ class PfSenseData:
 
 
 class CoordinatorEntityManager:
-    """GOUDEN BUILD: Slimme Entity Manager voorkomt duplicaten!"""
+    """GOLDEN BUILD: Smart Entity Manager prevents duplicates!"""
     def __init__(
         self,
         hass: HomeAssistant,
@@ -375,7 +375,7 @@ class CoordinatorEntityManager:
         self.process_entities_callback = process_entities_callback
         self.async_add_entities = async_add_entities
         
-        # Registreer de listener netjes zonder duplicaten te riskeren
+        # Register the listener neatly without risking duplicates
         self.hass.data[DOMAIN][config_entry.entry_id][UNDO_UPDATE_LISTENER].append(
             coordinator.async_add_listener(self.process_entities)
         )
@@ -390,7 +390,6 @@ class CoordinatorEntityManager:
             if entity.unique_id not in self.entity_unique_ids:
                 new_entities.append(entity)
                 self.entity_unique_ids.add(entity.unique_id)
-        
         
         if new_entities:
             self.async_add_entities(new_entities)

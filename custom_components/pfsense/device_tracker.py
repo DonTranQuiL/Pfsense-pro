@@ -36,7 +36,7 @@ _LOGGER = logging.getLogger(__name__)
 
 def lookup_mac(mac_vendor_lookup: AsyncMacLookup, mac: str) -> str:
     mac = mac_vendor_lookup.sanitise(mac)
-    if type(mac) == str:
+    if isinstance(mac, str):
         mac = mac.encode("utf8")
     return mac_vendor_lookup.prefixes[mac[:6]].decode("utf8")
 
@@ -285,9 +285,7 @@ class PfSenseScannerEntity(PfSenseEntity, ScannerEntity):
 
         ip_address = entry.get("ip-address")
         if ip_address is not None and len(ip_address) > 0:
-            client = self._get_pfsense_client()
-            # FIX: this was self.hass.add_job, this was blocking the event loop! By TranQuiL
-            self.hass.async_add_executor_job(client.delete_arp_entry, ip_address)
+            self._last_known_ip = ip_address
 
         if update_time:
             self._last_known_connected_time = int(update_time)

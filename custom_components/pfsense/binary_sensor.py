@@ -77,18 +77,24 @@ class PfSenseBinarySensor(PfSenseEntity, BinarySensorEntity):
         self._attr_unique_id = slugify(f"{self.pfsense_device_unique_id}_{entity_description.key}")
 
     @property
-    def is_on(self):
+    def is_on(self) -> bool | None:
         return False
 
 class PfSenseCarpStatusBinarySensor(PfSenseBinarySensor):
     @property
-    def is_on(self):
-        return dict_get(self.coordinator.data, "carp_status", STATE_UNKNOWN)
+    def is_on(self) -> bool | None:
+        val = dict_get(self.coordinator.data, "carp_status")
+        if val is None or val == STATE_UNKNOWN:
+            return None
+        return bool(val)
 
 class PfSensePendingNoticesPresentBinarySensor(PfSenseBinarySensor):
     @property
-    def is_on(self):
-        return dict_get(self.coordinator.data, "notices.pending_notices_present", STATE_UNKNOWN)
+    def is_on(self) -> bool | None:
+        val = dict_get(self.coordinator.data, "notices.pending_notices_present")
+        if val is None or val == STATE_UNKNOWN:
+            return None
+        return bool(val)
 
     @property
     def device_class(self):
@@ -102,16 +108,14 @@ class PfSensePendingNoticesPresentBinarySensor(PfSenseBinarySensor):
             attrs["pending_notices"] = notices
         return attrs
 
-# new: CPU overload check by TranQuiL aka Malosaaa
 class PfSenseCpuOverloadBinarySensor(PfSenseBinarySensor):
     @property
-    def is_on(self):
+    def is_on(self) -> bool | None:
         usage = dict_get(self.coordinator.data, "telemetry.cpu.used_percent", 0)
         return usage > 90
 
-# new: memory overload check by TranQuiL aka Malosaaa
 class PfSenseMemoryOverloadBinarySensor(PfSenseBinarySensor):
     @property
-    def is_on(self):
+    def is_on(self) -> bool | None:
         usage = dict_get(self.coordinator.data, "telemetry.memory.used_percent", 0)
         return usage > 90

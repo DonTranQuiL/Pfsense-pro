@@ -148,14 +148,17 @@ class PfSenseFirmwareUpdatesAvailableUpdate(PfSenseUpdate):
         """Install an update asynchronously (NON-BLOCKING)."""
         client = self._get_pfsense_client()
         
-        # Start de firmware upgrade via de veilige achtergrond thread
+        # Start the firmware upgrade via the safe background thread
         pid = await self.hass.async_add_executor_job(client.upgrade_firmware)
 
         sleep_time = 10
         running = True
-        while running:
-            # GEBRUIK ASYNCIO SLEEP: Laat Home Assistant ademen terwijl we wachten
-            await asyncio.sleep(sleep_time)
-            
-            # Controleer via de achtergrond thread of hij nog bezig is
-            running = await self.hass.async_add_executor_job(client.pid_is_running, pid)
+        try:
+            while running:
+                # USE ASYNCIO SLEEP: Let Home Assistant breathe while waiting
+                await asyncio.sleep(sleep_time)
+                
+                # Check via background thread if it is still busy
+                running = await self.hass.async_add_executor_job(client.pid_is_running, pid)
+        except Exception as err:
+            _LOGGER.info("Connection lost during pfSense system upgrade/reboot sequence: %s", err)

@@ -9,34 +9,33 @@ import xmlrpc.client
 _LOGGER = logging.getLogger(__name__)
 
 def dict_get(data: dict, path: str, default=None):
-    pathList = re.split(r"\.", path, flags=re.IGNORECASE)
+    path_list = path.split(".")
     result = data
-    for key in pathList:
+    for key in path_list:
         try:
             key = int(key) if key.isnumeric() else key
             result = result[key]
-        except:
+        except (KeyError, TypeError, IndexError):
             result = default
             break
     return result
 
 def normalize_service_data(service):
-    service_data_type = type(service).__name__
-    if service_data_type == "dict":
+    if isinstance(service, dict):
         pass
-    elif service_data_type == "NoneType":
+    elif service is None:
         service = {}
-    elif service_data_type == "str":
+    elif isinstance(service, str):
         if len(service) > 0:
             service = json.loads(service)
         else:
             service = {}
     else:
-        raise TypeError("invalid datatype for variable `service`: " + service_data_type)
+        raise TypeError(f"Invalid datatype for variable `service`: {type(service).__name__}")
     return service
 
 class Client(object):
-    """pfSense Client - GOUDEN BUILD VERSIE (Veilig & Synchroon)"""
+    """pfSense Client - GOLDEN BUILD VERSION (Safe & Synchronous)"""
 
     def __init__(self, url, username, password, opts=None):
         if opts is None:
@@ -57,7 +56,7 @@ class Client(object):
     def _get_proxy(self):
         context = None
         verify_ssl = True
-        if "verify_ssl" in self._opts.keys():
+        if "verify_ssl" in self._opts:
             verify_ssl = self._opts["verify_ssl"]
 
         if self._url_parts.scheme == "https" and not verify_ssl:
@@ -712,10 +711,10 @@ $toreturn = [
 ];
 
 foreach ($ifdescrs as $ifdescr => $ifname) {
-  $data = get_interface_info("${ifdescr}");
+  $data = get_interface_info("{$ifdescr}");
   $data["descr"] = $ifname;
   $data["ifname"] = $ifdescr;
-  $toreturn["interfaces"]["${ifdescr}"] = $data;
+  $toreturn["interfaces"]["{$ifdescr}"] = $data;
 }
 
 foreach ($ovpn_servers as $server) {

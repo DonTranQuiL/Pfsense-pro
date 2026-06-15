@@ -330,7 +330,6 @@ class PfSenseStaticKeySensor(PfSenseSensor):
             return STATE_UNKNOWN
 
         if self.entity_description.key == "telemetry.system.boottime":
-            # Modern HA no Backward comp needed By TranQuiL aka Malosaaa
             return utc_from_timestamp(value)
 
         if self.entity_description.key == "telemetry.cpu.frequency.current":
@@ -481,7 +480,7 @@ class PfSenseGatewaySensor(PfSenseSensor):
         if property in ["stddev", "delay", "loss"]:
             value = gateway[property]
             if isinstance(value, str):
-                value = re.sub(r"[^0-9\.]*", "", value)
+                value = re.sub(r"[^0-9.]*", "", value)
                 if len(value) < 1:
                     return False
 
@@ -524,7 +523,7 @@ class PfSenseGatewaySensor(PfSenseSensor):
         try:
             value = gateway[property]
             if property in ["stddev", "delay", "loss"] and isinstance(value, str):
-                value = re.sub(r"[^0-9\.]*", "", value)
+                value = re.sub(r"[^0-9.]*", "", value)
                 if len(value) > 0:
                     value = float(value)
 
