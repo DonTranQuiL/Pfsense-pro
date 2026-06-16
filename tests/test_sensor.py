@@ -6,20 +6,36 @@ from custom_components.pfsense.const import DOMAIN
 from custom_components.pfsense.sensor import PfSenseOpenVPNServerSensor
 from homeassistant.components.sensor import SensorEntityDescription
 
+
 @pytest.fixture
 def mock_coordinator():
     coord = MagicMock()
     coord.data = {
-        "telemetry": {"openvpn": {"servers": {"1": {"vpnid": "1", "name": "TestVPN", "status": "up"}}}}
+        "telemetry": {
+            "openvpn": {
+                "servers": {"1": {"vpnid": "1", "name": "TestVPN", "status": "up"}}
+            }
+        }
     }
     return coord
 
-@patch("custom_components.pfsense.PfSenseEntity.pfsense_device_unique_id", new_callable=PropertyMock, return_value="test")
-@patch("custom_components.pfsense.PfSenseEntity.pfsense_device_name", new_callable=PropertyMock, return_value="pfSense")
+
+@patch(
+    "custom_components.pfsense.PfSenseEntity.pfsense_device_unique_id",
+    new_callable=PropertyMock,
+    return_value="test",
+)
+@patch(
+    "custom_components.pfsense.PfSenseEntity.pfsense_device_name",
+    new_callable=PropertyMock,
+    return_value="pfSense",
+)
 def test_openvpn_sensor(mock_name, mock_uid, mock_coordinator):
     config_entry = MockConfigEntry(domain=DOMAIN)
-    desc = SensorEntityDescription(key="telemetry.openvpn.servers.1.status", name="VPN Status")
-    
+    desc = SensorEntityDescription(
+        key="telemetry.openvpn.servers.1.status", name="VPN Status"
+    )
+
     # Init safely via property mocks
     sensor = PfSenseOpenVPNServerSensor(config_entry, mock_coordinator, desc, False)
 
