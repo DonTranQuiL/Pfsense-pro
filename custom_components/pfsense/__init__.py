@@ -222,7 +222,8 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
     """Migrate an old config entry."""
     version = config_entry.version
     if version == 1:
-        version = config_entry.version = 2
+        hass.config_entries.async_update_entry(config_entry, version=2)
+        version = config_entry.version
         tls_insecure = config_entry.data.get(CONF_TLS_INSECURE, DEFAULT_TLS_INSECURE)
         data = dict(config_entry.data)
         if CONF_TLS_INSECURE in data.keys():
