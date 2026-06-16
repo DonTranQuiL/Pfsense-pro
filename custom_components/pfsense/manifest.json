@@ -1,12 +1,16 @@
 {
   "domain": "pfsense",
   "name": "pfSense",
-  "codeowners": ["@DonTranQuiL"],
+  "codeowners": [
+    "@DonTranQuiL"
+  ],
   "config_flow": true,
   "dependencies": [],
   "documentation": "https://github.com/DonTranQuiL/pfsense-pro",
   "iot_class": "local_polling",
   "issue_tracker": "https://github.com/DonTranQuiL/pfsense-pro/issues",
-  "requirements": ["mac-vendor-lookup>=0.1.11"],
+  "requirements": [
+    "mac-vendor-lookup>=0.1.11"
+  ],
   "version": "2.0.0"
 }
