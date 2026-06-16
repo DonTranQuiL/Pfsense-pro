@@ -90,8 +90,8 @@ try:
     openrouter_headers = {
         "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json",
-        "HTTP-Referer": "https://github.com/DonTranQuiL/ADSB-For-Home-assistant",
-        "X-Title": "SkyRadar Release Notes Bot",
+        "HTTP-Referer": "https://github.com/DonTranQuiL/pfsense-pro",
+        "X-Title": "Pfsense pro bot",
     }
     openrouter_payload = {
         "model": "gpt-4o-mini",
