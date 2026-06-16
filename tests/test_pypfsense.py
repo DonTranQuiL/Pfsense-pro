@@ -57,7 +57,7 @@ def test_client_initialization(mock_server_proxy):
 
     # Test secure SSL context
     mock_server_proxy.reset_mock()
-    client_secure = Client("https://192.168.1.1", "admin", "password", {"verify_ssl": True})
+    Client("https://192.168.1.1", "admin", "password", {"verify_ssl": True})
     # If verify_ssl is true, it doesn't pass an unverified context
     assert "context" not in mock_server_proxy.call_args[1]
 
