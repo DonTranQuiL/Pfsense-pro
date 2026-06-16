@@ -127,18 +127,33 @@ async def async_setup_entry(
         for interface_name in dict_get(state, "telemetry.interfaces", {}).keys():
             interface = state["telemetry"]["interfaces"][interface_name]
             for property in [
-                "status", "inerrs", "outerrs", "collisions", "inbytespass",
-                "inbytespass_kilobytes_per_second", "outbytespass",
-                "outbytespass_kilobytes_per_second", "inpktspass",
-                "inpktspass_packets_per_second", "outpktspass",
-                "outpktspass_packets_per_second", "inbytesblock",
-                "inbytesblock_kilobytes_per_second", "outbytesblock",
-                "outbytesblock_kilobytes_per_second", "inpktsblock",
-                "inpktsblock_packets_per_second", "outpktsblock",
-                "outpktsblock_packets_per_second", "inbytes",
-                "inbytes_kilobytes_per_second", "outbytes",
-                "outbytes_kilobytes_per_second", "inpkts",
-                "inpkts_packets_per_second", "outpkts",
+                "status",
+                "inerrs",
+                "outerrs",
+                "collisions",
+                "inbytespass",
+                "inbytespass_kilobytes_per_second",
+                "outbytespass",
+                "outbytespass_kilobytes_per_second",
+                "inpktspass",
+                "inpktspass_packets_per_second",
+                "outpktspass",
+                "outpktspass_packets_per_second",
+                "inbytesblock",
+                "inbytesblock_kilobytes_per_second",
+                "outbytesblock",
+                "outbytesblock_kilobytes_per_second",
+                "inpktsblock",
+                "inpktsblock_packets_per_second",
+                "outpktsblock",
+                "outpktsblock_packets_per_second",
+                "inbytes",
+                "inbytes_kilobytes_per_second",
+                "outbytes",
+                "outbytes_kilobytes_per_second",
+                "inpkts",
+                "inpkts_packets_per_second",
+                "outpkts",
                 "outpkts_packets_per_second",
             ]:
                 state_class = None
@@ -155,7 +170,10 @@ async def async_setup_entry(
                 ]:
                     enabled_default = True
 
-                if "_packets_per_second" in property or "_kilobytes_per_second" in property:
+                if (
+                    "_packets_per_second" in property
+                    or "_kilobytes_per_second" in property
+                ):
                     state_class = SensorStateClass.MEASUREMENT
 
                 if "_packets_per_second" in property:
@@ -333,7 +351,10 @@ class PfSenseStaticKeySensor(PfSenseSensor):
             return False
         if value == 0 and self.entity_description.key == "telemetry.system.temp":
             return False
-        if value == 0 and self.entity_description.key == "telemetry.cpu.frequency.current":
+        if (
+            value == 0
+            and self.entity_description.key == "telemetry.cpu.frequency.current"
+        ):
             if self._previous_value is None:
                 return False
         return super().available
@@ -358,7 +379,10 @@ class PfSenseStaticKeySensor(PfSenseSensor):
             if value == 0 and self._previous_value is not None:
                 value = self._previous_value
 
-        if value == 0 and self.entity_description.key == "telemetry.cpu.frequency.current":
+        if (
+            value == 0
+            and self.entity_description.key == "telemetry.cpu.frequency.current"
+        ):
             return STATE_UNKNOWN
 
         self._previous_value = value
@@ -369,16 +393,16 @@ class PfSenseStaticKeySensor(PfSenseSensor):
         """Return diagnostic attributes for top-tier system insights."""
         state = self.coordinator.data
         attrs = {}
-        
+
         if self.entity_description.key == "telemetry.wan_ip":
             attrs["dns_servers"] = dict_get(state, "config.system.dnsserver", [])
             attrs["domain"] = dict_get(state, "system_info.domain")
             attrs["hostname"] = dict_get(state, "system_info.hostname")
-            
+
         elif "pfblockerng" in self.entity_description.key:
             attrs["last_synchronized"] = utc_from_timestamp(time.time()).isoformat()
             attrs["status"] = "Active"
-            
+
         return attrs
 
 
@@ -483,7 +507,15 @@ class PfSenseCarpInterfaceSensor(PfSenseSensor):
     def extra_state_attributes(self):
         attributes = {}
         interface = self._pfsense_get_interface()
-        for attr in ["interface", "vhid", "advskew", "advbase", "type", "subnet_bits", "subnet"]:
+        for attr in [
+            "interface",
+            "vhid",
+            "advskew",
+            "advbase",
+            "type",
+            "subnet_bits",
+            "subnet",
+        ]:
             attributes[attr] = interface[attr]
         return attributes
 

@@ -19,6 +19,7 @@ from custom_components.skyradar_fusion.const import (
 # 1. CONFIG FLOW TESTS
 # =========================================================================
 
+
 @pytest.mark.asyncio
 async def test_config_flow_zone_setup(hass: HomeAssistant):
     """Test setting up the integration in Zone Tracking mode."""
@@ -52,6 +53,7 @@ async def test_config_flow_zone_setup(hass: HomeAssistant):
 # 2. COORDINATOR & SENSOR TESTS
 # =========================================================================
 
+
 @pytest.mark.asyncio
 async def test_sensors_and_coordinator_data(hass: HomeAssistant):
     """Test that the coordinator processes API data and sensors update correctly."""
@@ -72,11 +74,32 @@ async def test_sensors_and_coordinator_data(hass: HomeAssistant):
     # Fake aircraft payload returned by the API
     mock_aircraft_data = [
         # Aircraft 1: Close by, should be classified as commercial
-        {"hex": "A123", "flight": "KLM456", "lat": 52.01, "lon": 5.01, "desc": "Boeing 737", "alt_baro": 10000},
+        {
+            "hex": "A123",
+            "flight": "KLM456",
+            "lat": 52.01,
+            "lon": 5.01,
+            "desc": "Boeing 737",
+            "alt_baro": 10000,
+        },
         # Aircraft 2: Close by, should be classified as helicopter
-        {"hex": "B789", "flight": "HELI1", "lat": 52.005, "lon": 5.005, "desc": "rotorcraft", "alt_baro": 1500},
+        {
+            "hex": "B789",
+            "flight": "HELI1",
+            "lat": 52.005,
+            "lon": 5.005,
+            "desc": "rotorcraft",
+            "alt_baro": 1500,
+        },
         # Aircraft 3: Too far away (outside 5000m radius), should be ignored
-        {"hex": "C000", "flight": "FARAWAY", "lat": 53.0, "lon": 6.0, "desc": "military", "alt_baro": 30000},
+        {
+            "hex": "C000",
+            "flight": "FARAWAY",
+            "lat": 53.0,
+            "lon": 6.0,
+            "desc": "military",
+            "alt_baro": 30000,
+        },
     ]
 
     mock_api = MagicMock()
@@ -90,24 +113,32 @@ async def test_sensors_and_coordinator_data(hass: HomeAssistant):
         await hass.async_block_till_done()
 
         # 1. Check Overview Sensor (Should be 2 total, because 1 is out of range)
-        overview_sensor = hass.states.get(f"sensor.skyradar_fusion_tracker_current_in_area")
+        overview_sensor = hass.states.get(
+            "sensor.skyradar_fusion_tracker_current_in_area"
+        )
         assert overview_sensor is not None
         assert overview_sensor.state == "2"
-        
+
         # Check attributes to ensure closest flight logic works
         attrs = overview_sensor.attributes
         assert "Closest Flight" in attrs
         assert attrs["Closest Flight"] in ["KLM456", "HELI1"]
 
         # 2. Check Category Sensors
-        commercial_sensor = hass.states.get(f"sensor.skyradar_fusion_tracker_commercials_in_area")
+        commercial_sensor = hass.states.get(
+            "sensor.skyradar_fusion_tracker_commercials_in_area"
+        )
         assert commercial_sensor is not None
         assert commercial_sensor.state == "1"
 
-        heli_sensor = hass.states.get(f"sensor.skyradar_fusion_tracker_helicopters_in_area")
+        heli_sensor = hass.states.get(
+            "sensor.skyradar_fusion_tracker_helicopters_in_area"
+        )
         assert heli_sensor is not None
         assert heli_sensor.state == "1"
 
-        military_sensor = hass.states.get(f"sensor.skyradar_fusion_tracker_militarys_in_area")
+        military_sensor = hass.states.get(
+            "sensor.skyradar_fusion_tracker_militarys_in_area"
+        )
         assert military_sensor is not None
         assert military_sensor.state == "0"

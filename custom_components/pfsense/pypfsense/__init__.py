@@ -1134,7 +1134,13 @@ foreach ($ovpn_servers as $server) {
         return data
 
     @_log_errors
-    def update_alias_address(self, alias_name: str, address: str, action: str = "add", kill_states: bool = True):
+    def update_alias_address(
+        self,
+        alias_name: str,
+        address: str,
+        action: str = "add",
+        kill_states: bool = True,
+    ):
         """Dynamically add or remove an IP/Host from a pfSense alias group, reload filters, and terminate target state sessions."""
         script = """
         require_once('/etc/inc/util.inc');
@@ -1202,11 +1208,19 @@ foreach ($ovpn_servers as $server) {
         }}
 
         $toreturn = ["data" => true];
-        """.format(json.dumps({"alias_name": alias_name, "address": address, "action": action, "kill_states": kill_states}))
-        
+        """.format(
+            json.dumps(
+                {
+                    "alias_name": alias_name,
+                    "address": address,
+                    "action": action,
+                    "kill_states": kill_states,
+                }
+            )
+        )
+
         response = self._exec_php(script)
         return response["data"]
-
 
     @_log_errors
     def are_notices_pending(self, category="all"):
@@ -1257,7 +1271,9 @@ $toreturn = [
         return notices
 
     @_log_errors
-    def file_notice(self, id, notice, category="General", url="", priority=1, local_only=False):
+    def file_notice(
+        self, id, notice, category="General", url="", priority=1, local_only=False
+    ):
         script = """
 $data = json_decode('{}', true);
 $id = $data["id"];
@@ -1271,14 +1287,18 @@ $value = file_notice($id, $notice, $category, $url, $priority, $local_only);
 $toreturn = [
   "data" => $value,
 ];
-""".format(json.dumps({
-            "id": id,
-            "notice": notice,
-            "category": category,
-            "url": url,
-            "priority": priority,
-            "local_only": local_only,
-        }))
+""".format(
+            json.dumps(
+                {
+                    "id": id,
+                    "notice": notice,
+                    "category": category,
+                    "url": url,
+                    "priority": priority,
+                    "local_only": local_only,
+                }
+            )
+        )
 
         response = self._exec_php(script)
         return response["data"]

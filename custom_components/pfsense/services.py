@@ -55,7 +55,13 @@ class ServiceRegistrar:
         # --- DEFERRED RUNTIME INJECTION PATCH ---
         from . import PfSenseEntity
 
-        async def service_update_alias(self_entity, alias_name: str, address: str, action: str, kill_states: bool = True):
+        async def service_update_alias(
+            self_entity,
+            alias_name: str,
+            address: str,
+            action: str,
+            kill_states: bool = True,
+        ):
             """Dynamic extension mapping runtime command parameters directly to the Client interface."""
             client = self_entity._get_pfsense_client()
             await self_entity.hass.async_add_executor_job(
