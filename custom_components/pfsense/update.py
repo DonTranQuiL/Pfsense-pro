@@ -1,8 +1,7 @@
 """pfSense integration."""
 
 import logging
-import asyncio
-from typing import Any
+import time
 
 from homeassistant.components.update import (
     UpdateDeviceClass,
@@ -77,7 +76,13 @@ class PfSenseUpdate(PfSenseEntity, UpdateEntity):
             f"{self.pfsense_device_unique_id}_{entity_description.key}"
         )
 
-        self._attr_supported_features |= UpdateEntityFeature.INSTALL
+        self._attr_supported_features |= (
+            UpdateEntityFeature.INSTALL
+            # | UpdateEntityFeature.BACKUP
+            # | UpdateEntityFeature.PROGRESS
+            # | UpdateEntityFeature.RELEASE_NOTES
+            # | UpdateEntityFeature.SPECIFIC_VERSION
+        )
 
     @property
     def device_class(self):
@@ -88,11 +93,11 @@ class PfSenseFirmwareUpdatesAvailableUpdate(PfSenseUpdate):
     @property
     def available(self):
         state = self.coordinator.data
-        if not state or state.get("firmware_update_info") is None:
-            return False
-
-        base_info = dict_get(state, "firmware_update_info.base")
-        if base_info is False or base_info is None:
+        if (
+            state["firmware_update_info"] is None
+            or dict_get(state, "firmware_update_info.base") is False
+            or dict_get(state, "firmware_update_info.base") is None
+        ):
             return False
 
         return super().available
@@ -105,6 +110,7 @@ class PfSenseFirmwareUpdatesAvailableUpdate(PfSenseUpdate):
     def installed_version(self):
         """Version installed and in use."""
         state = self.coordinator.data
+
         try:
             return dict_get(state, "firmware_update_info.base.installed_version")
         except KeyError:
@@ -114,7 +120,10 @@ class PfSenseFirmwareUpdatesAvailableUpdate(PfSenseUpdate):
     def latest_version(self):
         """Latest version available for install."""
         state = self.coordinator.data
+
         try:
+            # fake a new update
+            # return "foobar"
             return dict_get(state, "firmware_update_info.base.version")
         except KeyError:
             return None
@@ -144,21 +153,13 @@ class PfSenseFirmwareUpdatesAvailableUpdate(PfSenseUpdate):
     def release_url(self):
         return "https://docs.netgate.com/pfsense/en/latest/releases/index.html"
 
-    async def async_install(self, version=None, backup=False):
-        """Install an update asynchronously (NON-BLOCKING)."""
+    def install(self, version=None, backup=False):
+        """Install an update."""
         client = self._get_pfsense_client()
-        
-        # Start the firmware upgrade via the safe background thread
-        pid = await self.hass.async_add_executor_job(client.upgrade_firmware)
+        pid = client.upgrade_firmware()
 
         sleep_time = 10
         running = True
-        try:
-            while running:
-                # USE ASYNCIO SLEEP: Let Home Assistant breathe while waiting
-                await asyncio.sleep(sleep_time)
-                
-                # Check via background thread if it is still busy
-                running = await self.hass.async_add_executor_job(client.pid_is_running, pid)
-        except Exception as err:
-            _LOGGER.info("Connection lost during pfSense system upgrade/reboot sequence: %s", err)
+        while running:
+            time.sleep(sleep_time)
+            running = client.pid_is_running(pid)

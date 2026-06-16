@@ -47,17 +47,45 @@ class ServiceRegistrar:
 
     @callback
     def async_register(self):
-        # services do not need to be reloaded for every config_entry
         if "loaded" in _data:
             return
 
         _data.add("loaded")
 
-        # Setup services
+        # --- DEFERRED RUNTIME INJECTION PATCH ---
+        from . import PfSenseEntity
+
+        async def service_update_alias(self_entity, alias_name: str, address: str, action: str, kill_states: bool = True):
+            """Dynamic extension mapping runtime command parameters directly to the Client interface."""
+            client = self_entity._get_pfsense_client()
+            await self_entity.hass.async_add_executor_job(
+                client.update_alias_address, alias_name, address, action, kill_states
+            )
+
+        if not hasattr(PfSenseEntity, "service_update_alias"):
+            PfSenseEntity.service_update_alias = service_update_alias
+
         async def _async_send_service(call: ServiceCall):
             await entity_service_call(
-                self.hass, async_get_entities(self.hass), f"service_{call.service}", call
+                self.hass,
+                async_get_entities(self.hass),
+                f"service_{call.service}",
+                call,
             )
+
+        self.hass.services.async_register(
+            domain=DOMAIN,
+            service="update_alias",
+            schema=cv.make_entity_service_schema(
+                {
+                    vol.Required("alias_name"): vol.Any(cv.string),
+                    vol.Required("address"): vol.Any(cv.string),
+                    vol.Required("action"): vol.In(["add", "remove"]),
+                    vol.Optional("kill_states", default=True): cv.boolean,
+                }
+            ),
+            service_func=_async_send_service,
+        )
 
         self.hass.services.async_register(
             domain=DOMAIN,

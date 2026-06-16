@@ -1,43 +1,60 @@
+"""
+note that the xmlrpc api only allows a single request to be handled at a time
+likely via some sort of mutex.
+"""
+
 import json
 import logging
 import re
+import socket
 import ssl
 from urllib.parse import quote_plus, urlparse
 from xml.parsers.expat import ExpatError
 import xmlrpc.client
 
+# value to set as the socket timeout
+DEFAULT_TIMEOUT = 10
+
 _LOGGER = logging.getLogger(__name__)
 
+
 def dict_get(data: dict, path: str, default=None):
-    path_list = path.split(".")
+    pathList = re.split(r"\.", path, flags=re.IGNORECASE)
     result = data
-    for key in path_list:
+    for key in pathList:
         try:
             key = int(key) if key.isnumeric() else key
             result = result[key]
-        except (KeyError, TypeError, IndexError):
+        except Exception:
             result = default
             break
+
     return result
 
+
 def normalize_service_data(service):
-    if isinstance(service, dict):
+    service_data_type = type(service).__name__
+    if service_data_type == "dict":
         pass
-    elif service is None:
+    elif service_data_type == "NoneType":
         service = {}
-    elif isinstance(service, str):
+    elif service_data_type == "str":
         if len(service) > 0:
             service = json.loads(service)
         else:
             service = {}
     else:
-        raise TypeError(f"Invalid datatype for variable `service`: {type(service).__name__}")
+        raise TypeError("invalid datatype for variable `service`: " + service_data_type)
+
     return service
 
+
 class Client(object):
-    """pfSense Client - GOLDEN BUILD VERSION (Safe & Synchronous)"""
+    """pfSense Client"""
 
     def __init__(self, url, username, password, opts=None):
+        """pfSense Client initializer."""
+
         if opts is None:
             opts = {}
 
@@ -56,13 +73,28 @@ class Client(object):
     def _get_proxy(self):
         context = None
         verify_ssl = True
-        if "verify_ssl" in self._opts:
+        if "verify_ssl" in self._opts.keys():
             verify_ssl = self._opts["verify_ssl"]
 
         if self._url_parts.scheme == "https" and not verify_ssl:
             context = ssl._create_unverified_context()
 
-        return xmlrpc.client.ServerProxy(self._url, context=context, verbose=False)
+        verbose = False
+        proxy = xmlrpc.client.ServerProxy(self._url, context=context, verbose=verbose)
+        return proxy
+
+    def _apply_timeout(func):
+        def inner(*args, **kwargs):
+            response = None
+            default_timeout = socket.getdefaulttimeout()
+            try:
+                socket.setdefaulttimeout(DEFAULT_TIMEOUT)
+                response = func(*args, **kwargs)
+            finally:
+                socket.setdefaulttimeout(default_timeout)
+            return response
+
+        return inner
 
     def _log_errors(func):
         def inner(*args, **kwargs):
@@ -71,40 +103,67 @@ class Client(object):
             except BaseException as err:
                 _LOGGER.error(f"Unexpected {func.__name__} error {err=}, {type(err)=}")
                 raise err
+
         return inner
 
+    @_apply_timeout
     def _get_config_section(self, section):
         response = self._get_proxy().pfsense.backup_config_section([section])
         return response[section]
 
+    @_apply_timeout
     def _restore_config_section(self, section_name, data):
         params = {section_name: data}
         response = self._get_proxy().pfsense.restore_config_section(params, 60)
         return response
 
+    @_apply_timeout
     def _exec_php(self, script):
-        script = f"""
+        script = """
 ini_set('display_errors', 0);
-{script}
+
+{}
+
 $toreturn_real = $toreturn;
 $toreturn = [];
 $toreturn["real"] = json_encode($toreturn_real);
-"""
+""".format(script)
         response = self._get_proxy().pfsense.exec_php(script)
-        return json.loads(response["real"])
+        response = json.loads(response["real"])
+        return response
+
+    def _exec_php_no_timeout(self, script):
+        script = """
+ini_set('display_errors', 0);
+
+{}
+
+$toreturn_real = $toreturn;
+$toreturn = [];
+$toreturn["real"] = json_encode($toreturn_real);
+""".format(script)
+        response = self._get_proxy().pfsense.exec_php(script)
+        response = json.loads(response["real"])
+        return response
 
     def _exec_command(self, command, background=False):
-        script = f"""
-$data = json_decode('{json.dumps({"command": command, "background": background})}', true);
+        script = """
+$data = json_decode('{}', true);
 if ($data["background"]) {{
     $ret = mwexec_bg($data["command"]);    
-}} else {{
+}}
+else {{
     $ret = mwexec($data["command"]);
 }}
-$toreturn = ["data" => $ret];
-"""
-        return self._exec_php(script)["data"]
 
+$toreturn = [
+  "data" => $ret,
+];
+""".format(json.dumps({"command": command, "background": background}))
+        response = self._exec_php(script)
+        return response["data"]
+
+    @_apply_timeout
     @_log_errors
     def get_host_firmware_version(self):
         return self._get_proxy().pfsense.host_firmware_version(1, 60)
@@ -115,27 +174,42 @@ $toreturn = ["data" => $ret];
 require_once '/etc/inc/util.inc';
 global $xmlrpclockkey;
 unlock($xmlrpclockkey);
+
 require_once '/etc/inc/pkg-utils.inc';
-$toreturn = ["data" => ["base" => get_system_pkg_version(), "packages" => []]];
+
+$toreturn = [
+  "data" => [
+      "base" => get_system_pkg_version(),
+      "packages" => [],
+    ]
+];
 """
-        return self._exec_php(script)["data"]
+        response = self._exec_php(script)
+        return response["data"]
 
     @_log_errors
     def upgrade_firmware(self):
         script = """
 $ret = mwexec_bg("pfSense-upgrade -y -l /tmp/hass-upgrade.log -p /tmp/hass-upgrade.sock");
-$toreturn = ["data" => $ret];
+$toreturn = [
+  "data" => $ret,
+];
 """
-        return self._exec_php(script)["data"]
+        response = self._exec_php(script)
+        return response["data"]
 
     @_log_errors
     def pid_is_running(self, pid):
-        script = f"""
-$data = json_decode('{json.dumps({"pid": pid})}', true);
+        script = """
+$data = json_decode('{}', true);
 $running = posix_kill($data["pid"],0);
-$toreturn = ["data" => $running];
-"""
-        return self._exec_php(script)["data"]
+$toreturn = [
+  "data" => $running,
+];
+""".format(json.dumps({"pid": pid}))
+
+        response = self._exec_php(script)
+        return response["data"]
 
     @_log_errors
     def get_system_serial(self):
@@ -143,14 +217,23 @@ $toreturn = ["data" => $running];
 require_once '/etc/inc/util.inc';
 global $xmlrpclockkey;
 unlock($xmlrpclockkey);
-$toreturn = ["data" => system_get_serial()];
+
+$toreturn = [
+  "data" => system_get_serial(),
+];
 """
-        return self._exec_php(script)["data"]
+        response = self._exec_php(script)
+        return response["data"]
 
     @_log_errors
     def get_netgate_device_id(self):
-        script = """$toreturn = ["data" => system_get_uniqueid()];"""
-        return self._exec_php(script)["data"]
+        script = """
+$toreturn = [
+  "data" => system_get_uniqueid(),
+];
+"""
+        response = self._exec_php(script)
+        return response["data"]
 
     @_log_errors
     def get_system_info(self):
@@ -158,7 +241,9 @@ $toreturn = ["data" => system_get_serial()];
 require_once '/etc/inc/util.inc';
 global $xmlrpclockkey;
 unlock($xmlrpclockkey);
+
 global $config;
+
 $toreturn = [
   "hostname" => $config["system"]["hostname"],
   "domain" => $config["system"]["domain"],
@@ -167,7 +252,8 @@ $toreturn = [
   "platform" => system_identify_specific_platform(),
 ];
 """
-        return self._exec_php(script)
+        response = self._exec_php(script)
+        return response
 
     @_log_errors
     def get_config(self):
@@ -175,10 +261,15 @@ $toreturn = [
 require_once '/etc/inc/util.inc';
 global $xmlrpclockkey;
 unlock($xmlrpclockkey);
+
 global $config;
-$toreturn = ["data" => $config];
+
+$toreturn = [
+  "data" => $config,
+];
 """
-        return self._exec_php(script)["data"]
+        response = self._exec_php(script)
+        return response["data"]
 
     @_log_errors
     def get_interfaces(self):
@@ -186,12 +277,13 @@ $toreturn = ["data" => $config];
 
     @_log_errors
     def get_interface(self, interface):
-        return self.get_interfaces()[interface]
+        interfaces = self.get_interfaces()
+        return interfaces[interface]
 
     @_log_errors
     def get_interface_by_description(self, interface):
         interfaces = self.get_interfaces()
-        for i_interface in interfaces.keys():
+        for i, i_interface in enumerate(interfaces.keys()):
             if interfaces[i_interface]["descr"] == interface:
                 return interfaces[i_interface]
 
@@ -199,7 +291,12 @@ $toreturn = ["data" => $config];
     def enable_filter_rule_by_tracker(self, tracker):
         config = self.get_config()
         for rule in config["filter"]["rule"]:
-            if rule.get("tracker") == tracker and "disabled" in rule:
+            if "tracker" not in rule.keys():
+                continue
+            if rule["tracker"] != tracker:
+                continue
+
+            if "disabled" in rule.keys():
                 del rule["disabled"]
                 self._restore_config_section("filter", config["filter"])
 
@@ -207,43 +304,68 @@ $toreturn = ["data" => $config];
     def disable_filter_rule_by_tracker(self, tracker):
         config = self.get_config()
         for rule in config["filter"]["rule"]:
-            if rule.get("tracker") == tracker and "disabled" not in rule:
+            if "tracker" not in rule.keys():
+                continue
+            if rule["tracker"] != tracker:
+                continue
+
+            if "disabled" not in rule.keys():
                 rule["disabled"] = ""
                 self._restore_config_section("filter", config["filter"])
 
     @_log_errors
     def enable_nat_port_forward_rule_by_created_time(self, created_time):
         config = self.get_config()
-        if not created_time: return
+        if created_time is None:
+            return
+
         for rule in config["nat"]["rule"]:
-            if dict_get(rule, "created.time") == created_time and "disabled" in rule:
+            if dict_get(rule, "created.time") != created_time:
+                continue
+
+            if "disabled" in rule.keys():
                 del rule["disabled"]
                 self._restore_config_section("nat", config["nat"])
 
     @_log_errors
     def disable_nat_port_forward_rule_by_created_time(self, created_time):
         config = self.get_config()
-        if not created_time: return
+        if created_time is None:
+            return
+
         for rule in config["nat"]["rule"]:
-            if dict_get(rule, "created.time") == created_time and "disabled" not in rule:
+            if dict_get(rule, "created.time") != created_time:
+                continue
+
+            if "disabled" not in rule.keys():
                 rule["disabled"] = ""
                 self._restore_config_section("nat", config["nat"])
 
     @_log_errors
     def enable_nat_outbound_rule_by_created_time(self, created_time):
         config = self.get_config()
-        if not created_time: return
+        if created_time is None:
+            return
+
         for rule in config["nat"]["outbound"]["rule"]:
-            if dict_get(rule, "created.time") == created_time and "disabled" in rule:
+            if dict_get(rule, "created.time") != created_time:
+                continue
+
+            if "disabled" in rule.keys():
                 del rule["disabled"]
                 self._restore_config_section("nat", config["nat"])
 
     @_log_errors
     def disable_nat_outbound_rule_by_created_time(self, created_time):
         config = self.get_config()
-        if not created_time: return
+        if created_time is None:
+            return
+
         for rule in config["nat"]["outbound"]["rule"]:
-            if dict_get(rule, "created.time") == created_time and "disabled" not in rule:
+            if dict_get(rule, "created.time") != created_time:
+                continue
+
+            if "disabled" not in rule.keys():
                 rule["disabled"] = ""
                 self._restore_config_section("nat", config["nat"])
 
@@ -253,9 +375,13 @@ $toreturn = ["data" => $config];
 require_once '/etc/inc/util.inc';
 global $xmlrpclockkey;
 unlock($xmlrpclockkey);
-$toreturn = ["data" => get_configured_interface_with_descr()];
+
+$toreturn = [
+  "data" => get_configured_interface_with_descr(),
+];
 """
-        return self._exec_php(script)["data"]
+        response = self._exec_php(script)
+        return response["data"]
 
     @_log_errors
     def get_gateways(self):
@@ -263,13 +389,20 @@ $toreturn = ["data" => get_configured_interface_with_descr()];
 require_once '/etc/inc/util.inc';
 global $xmlrpclockkey;
 unlock($xmlrpclockkey);
-$toreturn = ["data" => return_gateways_array()];
+
+$toreturn = [
+  "data" => return_gateways_array(),
+];
 """
-        return self._exec_php(script)["data"]
+        response = self._exec_php(script)
+        return response["data"]
 
     @_log_errors
     def get_gateway(self, gateway):
-        return self.get_gateways().get(gateway)
+        gateways = self.get_gateways()
+        for g in gateways.keys():
+            if g == gateway:
+                return gateways[g]
 
     @_log_errors
     def get_gateways_status(self):
@@ -277,44 +410,74 @@ $toreturn = ["data" => return_gateways_array()];
 require_once '/etc/inc/util.inc';
 global $xmlrpclockkey;
 unlock($xmlrpclockkey);
-$toreturn = ["data" => return_gateways_status(true)];
+
+$toreturn = [
+  "data" => return_gateways_status(true),
+];
 """
-        return self._exec_php(script)["data"]
+        response = self._exec_php(script)
+        return response["data"]
 
     @_log_errors
     def get_gateway_status(self, gateway):
-        return self.get_gateways_status().get(gateway)
+        gateways = self.get_gateways_status()
+        for g in gateways.keys():
+            if g == gateway:
+                return gateways[g]
 
     @_log_errors
     def get_arp_table(self, resolve_hostnames=False):
-        script = f"""
+        script = """
 require_once '/etc/inc/util.inc';
 global $xmlrpclockkey;
 unlock($xmlrpclockkey);
-$data = json_decode('{json.dumps({"resolve_hostnames": resolve_hostnames})}', true);
-$toreturn = ["data" => system_get_arp_table($data["resolve_hostnames"])];
-"""
-        return self._exec_php(script)["data"]
+
+$data = json_decode('{}', true);
+$resolve_hostnames = $data["resolve_hostnames"];
+$toreturn = [
+  "data" => system_get_arp_table($resolve_hostnames),
+];
+""".format(json.dumps({"resolve_hostnames": resolve_hostnames}))
+        response = self._exec_php(script)
+        return response["data"]
 
     @_log_errors
     def set_default_gateway(self, gateway, ip_version="4"):
-        key = "defaultgw4" if "4" in str(ip_version) else "defaultgw6"
-        script = f"""
+        ipVersion = str(ip_version)
+        key = "defaultgw4"
+        if "4" in ipVersion:
+            key = "defaultgw4"
+        if "6" in ipVersion:
+            key = "defaultgw6"
+
+        script = """
 require_once '/etc/inc/config.inc';
 global $config;
-$data = json_decode('{json.dumps({"key": key, "gateway": gateway})}', true);
-$config['gateways'][$data["key"]] = $data["gateway"];
+
+$data = json_decode('{}', true);
+$key = $data["key"];
+$config['gateways'][$key] = $data["gateway"];
+
 mark_subsystem_dirty('staticroutes');
 write_config("System - Gateways: save default gateway");
+
 $retval = 0;
+                    
 $retval |= system_routing_configure();
 $retval |= system_resolvconf_generate();
 $retval |= filter_configure();
 setup_gateways_monitor();
 send_event("service reload dyndnsall");
-if ($retval == 0) {{ clear_subsystem_dirty('staticroutes'); }}
-$toreturn = ["data" => $retval];
-"""
+
+if ($retval == 0) {{
+  clear_subsystem_dirty('staticroutes');
+}}
+
+$toreturn = [
+  "data" => $retval
+];
+""".format(json.dumps({"key": key, "gateway": gateway}))
+
         self._exec_php(script)
 
     @_log_errors
@@ -323,150 +486,265 @@ $toreturn = ["data" => $retval];
 require_once '/etc/inc/util.inc';
 global $xmlrpclockkey;
 unlock($xmlrpclockkey);
+
 require_once '/etc/inc/service-utils.inc';
 $s = get_services();
 $services = [];
 foreach($s as $service) {
-  if (is_array($service) && !empty($service)) { $services[] = $service; }
+  if (!is_array($service)) {
+      continue;
+  }
+  if (!empty($service)) {
+    $services[] = $service;
+  }
 }
-$toreturn = ["data" => $services];
+
+$toreturn = [
+  "data" => $services,
+];
 """
         response = self._exec_php(script)
+
         for service in response["data"]:
             if "status" not in service:
-                service["status"] = self.get_service_is_running(service["name"], service)
+                service["status"] = self.get_service_is_running(
+                    service["name"], service
+                )
+
         return response["data"]
 
     @_log_errors
     def get_service_is_enabled(self, service_name, service={}):
-        script = f"""
+        service = normalize_service_data(service)
+        script = """
 require_once '/etc/inc/util.inc';
 global $xmlrpclockkey;
 unlock($xmlrpclockkey);
+
 require_once '/etc/inc/service-utils.inc';
-$data = json_decode('{json.dumps({"service_name": service_name})}', true);
-$toreturn = ["data" => is_service_enabled($data["service_name"])];
-"""
-        return self._exec_php(script)["data"]
+
+$data = json_decode('{}', true);
+$service_name = $data["service_name"];
+$toreturn = [
+  "data" => is_service_enabled($service_name),
+];
+""".format(json.dumps({"service_name": service_name, "service": service}))
+        response = self._exec_php(script)
+        return response["data"]
 
     @_log_errors
     def get_service_is_running(self, service_name, service={}):
         service = normalize_service_data(service)
-        script = f"""
+        script = """
 require_once '/etc/inc/util.inc';
 global $xmlrpclockkey;
 unlock($xmlrpclockkey);
+
 require_once '/etc/inc/service-utils.inc';
-$data = json_decode('{json.dumps({"service_name": service_name, "service": service})}', true);
+
+$data = json_decode('{}', true);
 $service_name = $data["service_name"];
-$service = $data["service"] ?: [];
-if ($service_name == "openvpn" && $service) {{
-  $service["name"] = $service["name"] ?: $service_name;
-  $service["vpnmode"] = $service["vpnmode"] ?: $service["mode"];
-  $service["mode"] = $service["mode"] ?: $service["vpnmode"];
-  $service["id"] = $service["vpnid"];
-  $toreturn = ["data" => (bool) get_service_status($service)];
-}} else {{
-  $toreturn = ["data" => (bool) is_service_running($service_name)];
+$service = $data["service"];
+if (!$service) {{
+  $service = [];
 }}
-"""
-        return self._exec_php(script)["data"]
+
+if ($service_name == "openvpn" && $service) {{
+  if (!$service["name"]) {{
+    $service["name"] = $service_name;
+  }}
+  if (!$service["vpnmode"] && $service["mode"]) {{
+    $service["vpnmode"] = $service["mode"];
+  }}
+  if (!$service["mode"] && $service["vpnmode"]) {{
+    $service["mode"] = $service["vpnmode"];
+  }}
+  $service["id"] = $service["vpnid"];
+  $toreturn = [
+    "data" => (bool) get_service_status($service),
+  ];
+}}
+else {{
+  $toreturn = [
+    "data" => (bool) is_service_running($service_name),
+  ];
+}}
+
+""".format(json.dumps({"service_name": service_name, "service": service}))
+        response = self._exec_php(script)
+        return response["data"]
 
     @_log_errors
     def start_service(self, service_name, service={}):
         service = normalize_service_data(service)
-        script = f"""
+        script = """
 require_once '/etc/inc/service-utils.inc';
-$data = json_decode('{json.dumps({"service_name": service_name, "service": service})}', true);
+
+$data = json_decode('{}', true);
 $service_name = $data["service_name"];
-$service = $data["service"] ?: [];
+$service = $data["service"];
+if (!$service) {{
+  $service = [];
+}}
+
 if ($service_name == "openvpn" && $service) {{
-  $service["name"] = $service["name"] ?: $service_name;
-  $service["vpnmode"] = $service["vpnmode"] ?: $service["mode"];
-  $service["mode"] = $service["mode"] ?: $service["vpnmode"];
+  if (!$service["name"]) {{
+    $service["name"] = $service_name;
+  }}
+  if (!$service["vpnmode"] && $service["mode"]) {{
+    $service["vpnmode"] = $service["mode"];
+  }}
+  if (!$service["mode"] && $service["vpnmode"]) {{
+    $service["mode"] = $service["vpnmode"];
+  }}
   $service["id"] = $service["vpnid"];
   $is_running = (bool) get_service_status($service);
-}} else {{
+}}
+else {{
   $is_running = is_service_running($service_name);
 }}
-if (!$is_running) {{ service_control_start($service_name, $service); }}
-$toreturn = ["data" => true];
-"""
+
+if (!$is_running) {{
+  service_control_start($service_name, $service);
+}}
+
+$toreturn = [
+  "data" => true,
+];
+""".format(json.dumps({"service_name": service_name, "service": service}))
         self._exec_php(script)
 
     @_log_errors
     def stop_service(self, service_name, service={}):
         service = normalize_service_data(service)
-        script = f"""
+        script = """
 require_once '/etc/inc/service-utils.inc';
-$data = json_decode('{json.dumps({"service_name": service_name, "service": service})}', true);
+
+$data = json_decode('{}', true);
 $service_name = $data["service_name"];
-$service = $data["service"] ?: [];
+$service = $data["service"];
+if (!$service) {{
+  $service = [];
+}}
+
 if ($service_name == "openvpn" && $service) {{
-  $service["name"] = $service["name"] ?: $service_name;
-  $service["vpnmode"] = $service["vpnmode"] ?: $service["mode"];
-  $service["mode"] = $service["mode"] ?: $service["vpnmode"];
+  if (!$service["name"]) {{
+    $service["name"] = $service_name;
+  }}
+  if (!$service["vpnmode"] && $service["mode"]) {{
+    $service["vpnmode"] = $service["mode"];
+  }}
+  if (!$service["mode"] && $service["vpnmode"]) {{
+    $service["mode"] = $service["vpnmode"];
+  }}
   $service["id"] = $service["vpnid"];
   $is_running = (bool) get_service_status($service);
-}} else {{
+}}
+else {{
   $is_running = is_service_running($service_name);
 }}
-if ($is_running) {{ service_control_stop($service_name, $service); }}
-$toreturn = ["data" => true];
-"""
+
+if ($is_running) {{
+  service_control_stop($service_name, $service);
+}}
+$toreturn = [
+  "data" => true,
+];
+""".format(json.dumps({"service_name": service_name, "service": service}))
         self._exec_php(script)
 
     @_log_errors
     def restart_service(self, service_name, service={}):
         service = normalize_service_data(service)
-        script = f"""
+        script = """
 require_once '/etc/inc/service-utils.inc';
-$data = json_decode('{json.dumps({"service_name": service_name, "service": service})}', true);
+
+$data = json_decode('{}', true);
 $service_name = $data["service_name"];
-$service = $data["service"] ?: [];
+$service = $data["service"];
+if (!$service) {{
+  $service = [];
+}}
+
 if ($service_name == "openvpn" && $service) {{
-  $service["name"] = $service["name"] ?: $service_name;
-  $service["vpnmode"] = $service["vpnmode"] ?: $service["mode"];
-  $service["mode"] = $service["mode"] ?: $service["vpnmode"];
+  if (!$service["name"]) {{
+    $service["name"] = $service_name;
+  }}
+  if (!$service["vpnmode"] && $service["mode"]) {{
+    $service["vpnmode"] = $service["mode"];
+  }}
+  if (!$service["mode"] && $service["vpnmode"]) {{
+    $service["mode"] = $service["vpnmode"];
+  }}
   $service["id"] = $service["vpnid"];
 }}
+
 service_control_restart($service_name, $service);
-$toreturn = ["data" => true];
-"""
+$toreturn = [
+  "data" => true,
+];
+""".format(json.dumps({"service_name": service_name, "service": service}))
         self._exec_php(script)
 
     @_log_errors
     def restart_service_if_running(self, service_name, service={}):
         service = normalize_service_data(service)
-        script = f"""
+        script = """
 require_once '/etc/inc/service-utils.inc';
-$data = json_decode('{json.dumps({"service_name": service_name, "service": service})}', true);
+
+$data = json_decode('{}', true);
 $service_name = $data["service_name"];
-$service = $data["service"] ?: [];
+$service = $data["service"];
+if (!$service) {{
+  $service = [];
+}}
+
 if ($service_name == "openvpn" && $service) {{
-  $service["name"] = $service["name"] ?: $service_name;
-  $service["vpnmode"] = $service["vpnmode"] ?: $service["mode"];
-  $service["mode"] = $service["mode"] ?: $service["vpnmode"];
+  if (!$service["name"]) {{
+    $service["name"] = $service_name;
+  }}
+  if (!$service["vpnmode"] && $service["mode"]) {{
+    $service["vpnmode"] = $service["mode"];
+  }}
+  if (!$service["mode"] && $service["vpnmode"]) {{
+    $service["mode"] = $service["vpnmode"];
+  }}
   $service["id"] = $service["vpnid"];
   $is_running = (bool) get_service_status($service);
-}} else {{
+}}
+else {{
   $is_running = is_service_running($service_name);
 }}
-if ($is_running) {{ service_control_restart($service_name, $service); }}
-$toreturn = ["data" => true];
-"""
+
+if ($is_running) {{
+  service_control_restart($service_name, $service);
+}}
+$toreturn = [
+  "data" => true,
+];
+""".format(json.dumps({"service_name": service_name, "service": service}))
         self._exec_php(script)
 
     @_log_errors
     def get_dhcp_leases(self, dns_lookups=None):
-        script = f"""
+        script = """
 require_once '/etc/inc/util.inc';
 global $xmlrpclockkey;
 unlock($xmlrpclockkey);
-$data = json_decode('{json.dumps({"dns_lookups": dns_lookups})}', true);
-$toreturn = ["data" => system_get_dhcpleases($data["dns_lookups"])];
-"""
-        return self._exec_php(script)["data"]["lease"]
+
+$data = json_decode('{}', true);
+
+$dns_lookups = null;
+if ($data["dns_lookups"] === true || $data["dns_lookups"] === false) {{
+  $dns_lookups = $data["dns_lookups"];
+}}
+
+$toreturn = [
+  "data" => system_get_dhcpleases($dns_lookups),
+];
+""".format(json.dumps({"dns_lookups": dns_lookups}))
+        response = self._exec_php(script)
+        return response["data"]["lease"]
 
     @_log_errors
     def get_virtual_ips(self):
@@ -474,14 +752,22 @@ $toreturn = ["data" => system_get_dhcpleases($data["dns_lookups"])];
 require_once '/etc/inc/util.inc';
 global $xmlrpclockkey;
 unlock($xmlrpclockkey);
+
 global $config;
+
 $vips = [];
 if ($config['virtualip'] && is_iterable($config['virtualip']['vip'])) {
-  foreach ($config['virtualip']['vip'] as $vip) { $vips[] = $vip; }
+  foreach ($config['virtualip']['vip'] as $vip) {
+    $vips[] = $vip;
+  }
 }
-$toreturn = ["data" => $vips];
+
+$toreturn = [
+  "data" => $vips,
+];
 """
-        return self._exec_php(script)["data"]
+        response = self._exec_php(script)
+        return response["data"]
 
     @_log_errors
     def get_carp_status(self):
@@ -489,21 +775,31 @@ $toreturn = ["data" => $vips];
 require_once '/etc/inc/util.inc';
 global $xmlrpclockkey;
 unlock($xmlrpclockkey);
-$toreturn = ["data" => get_carp_status()];
+
+$toreturn = [
+  "data" => get_carp_status(),
+];
 """
-        return self._exec_php(script)["data"]
+        response = self._exec_php(script)
+        return response["data"]
 
     @_log_errors
     def get_carp_interface_status(self, uniqueid):
-        script = f"""
+        script = """
 require_once '/etc/inc/util.inc';
 global $xmlrpclockkey;
 unlock($xmlrpclockkey);
-$data = json_decode('{json.dumps({"uniqueid": uniqueid})}', true);
-$carp_if = "_vip{{$data['uniqueid']}}";
-$toreturn = ["data" => get_carp_interface_status($carp_if)];
-"""
-        return self._exec_php(script)["data"]
+
+$data = json_decode('{}', true);
+$uniqueid = $data["uniqueid"];
+$carp_if = "_vip{{$uniqueid}}";
+$status = get_carp_interface_status($carp_if);
+$toreturn = [
+  "data" => $status,
+];
+""".format(json.dumps({"uniqueid": uniqueid}))
+        response = self._exec_php(script)
+        return response["data"]
 
     @_log_errors
     def get_carp_interfaces(self):
@@ -511,74 +807,119 @@ $toreturn = ["data" => get_carp_interface_status($carp_if)];
 require_once '/etc/inc/util.inc';
 global $xmlrpclockkey;
 unlock($xmlrpclockkey);
+
 global $config;
+
 $vips = [];
 if ($config['virtualip'] && is_iterable($config['virtualip']['vip'])) {
   foreach ($config['virtualip']['vip'] as $vip) {
-    if ($vip["mode"] != "carp") continue;
+    if ($vip["mode"] != "carp") {
+      continue;
+    }
     $vips[] = $vip;
   }
 }
+
 foreach ($vips as &$vip) {
-  $vip["status"] = get_carp_interface_status("_vip{$vip['uniqid']}");
+  $status = get_carp_interface_status("_vip{$vip['uniqid']}");
+  $vip["status"] = $status;
 }
-$toreturn = ["data" => $vips];
+
+$toreturn = [
+  "data" => $vips,
+];
 """
-        return self._exec_php(script)["data"]
+        response = self._exec_php(script)
+        return response["data"]
 
     @_log_errors
     def delete_arp_entry(self, ip):
-        if len(ip) < 1: return
-        script = f"""
-$data = json_decode('{json.dumps({"ip": ip})}', true);
-$toreturn = ["data" => mwexec("arp -d " . trim($data["ip"]), true)];
-"""
+        if len(ip) < 1:
+            return
+        script = """
+$data = json_decode('{}', true);
+$ip = trim($data["ip"]);
+$ret = mwexec("arp -d " . $ip, true);
+$toreturn = [
+  "data" => $ret,
+];
+""".format(json.dumps({"ip": ip}))
         self._exec_php(script)
 
     @_log_errors
     def arp_get_mac_by_ip(self, ip, do_ping=True):
-        script = f"""
+        script = """
 require_once '/etc/inc/util.inc';
 global $xmlrpclockkey;
 unlock($xmlrpclockkey);
-$data = json_decode('{json.dumps({"ip": ip, "do_ping": do_ping})}', true);
-$toreturn = ["data" => arp_get_mac_by_ip($data["ip"], $data["do_ping"])];
-"""
+
+$data = json_decode('{}', true);
+$ip = $data["ip"];
+$do_ping = $data["do_ping"];
+$toreturn = [
+  "data" => arp_get_mac_by_ip($ip, $do_ping),
+];
+""".format(json.dumps({"ip": ip, "do_ping": do_ping}))
         response = self._exec_php(script)["data"]
-        return response if response else None
+        if not response:
+            return None
+        return response
 
     @_log_errors
     def reset_state_table(self):
-        self._exec_php('mwexec("/sbin/pfctl -F states");')
-
-    @_log_errors
-    def kill_states(self, source, destination=None):
-        if destination is None:
-            script = f"""
-$data = json_decode('{json.dumps({"source": source})}', true);
-mwexec("/sbin/pfctl -k {{$data['source']}}");
-"""
-        else:
-            script = f"""
-$data = json_decode('{json.dumps({"source": source, "destination": destination})}', true);
-mwexec("/sbin/pfctl -k {{$data['source']}} -k {{$data['destination']}}");
+        script = """
+mwexec("/sbin/pfctl -F states");
 """
         self._exec_php(script)
 
     @_log_errors
+    def kill_states(self, source, destination=None):
+        if destination is None:
+            script = """
+$data = json_decode('{}', true);
+$source = $data["source"];
+mwexec("/sbin/pfctl -k $source");
+""".format(json.dumps({"source": source}))
+            self._exec_php(script)
+            return None
+        else:
+            script = """
+$data = json_decode('{}', true);
+$source = $data["source"];
+$destination = $data["destination"];
+mwexec("/sbin/pfctl -k $source -k $destination");
+""".format(json.dumps({"source": source, "destination": destination}))
+            self._exec_php(script)
+            return None
+
+    @_log_errors
     def system_reboot(self, type="normal"):
-        script = f"""
-$data = json_decode('{json.dumps({"type": type})}', true);
-$type = strtolower($data["type"]);
+        script = """
+$data = json_decode('{}', true);
+$type = $data["type"];
+$type = strtolower($type);
+
 switch ($type) {{
     case 'fsck':
-        if (php_uname('m') != 'arm') mwexec('/sbin/nextboot -e "pfsense.fsck.force=5"');
-        system_reboot(); break;
-    case 'reroot': system_reboot_sync(true); break;
-    case 'normal': system_reboot(); break;
+        if (php_uname('m') != 'arm') {{
+            mwexec('/sbin/nextboot -e "pfsense.fsck.force=5"');
+        }}
+        system_reboot();
+        break;
+    case 'reroot':
+        system_reboot_sync(true);
+        break;
+    case 'normal':
+        system_reboot();
+        break;
+    default:
+        break;
 }}
-$toreturn = ["data" => true];
-"""
+
+$toreturn = [
+  "data" => true,
+];
+""".format(json.dumps({"type": type}))
         try:
             self._exec_php(script)
         except ExpatError:
@@ -586,25 +927,41 @@ $toreturn = ["data" => true];
 
     @_log_errors
     def system_halt(self):
+        script = """
+system_halt();
+$toreturn = [
+  "data" => true,
+];
+"""
         try:
-            self._exec_php('system_halt(); $toreturn = ["data" => true];')
+            self._exec_php(script)
         except ExpatError:
             pass
 
     @_log_errors
     def send_wol(self, interface, mac):
-        script = f"""
-$data = json_decode('{json.dumps({"interface": interface, "mac": mac})}', true);
-$if = $data["interface"]; $mac = $data["mac"];
+        script = """
+$data = json_decode('{}', true);
+$if = $data["interface"];
+$mac = $data["mac"];
 function send_wol($if, $mac) {{
         $ipaddr = get_interface_ip($if);
-        if (!is_ipaddr($ipaddr) || !is_macaddr($mac)) return false;
+        if (!is_ipaddr($ipaddr) || !is_macaddr($mac)) {{
+                return false;
+        }}
+
         $bcip = gen_subnet_max($ipaddr, get_interface_subnet($if));
         return (bool) !mwexec("/usr/local/bin/wol -i {{$bcip}} {{$mac}}");
 }}
-$toreturn = ["data" => send_wol($if, $mac)];
-"""
-        return self._exec_php(script)["data"]
+
+$value = send_wol($if, $mac);
+$toreturn = [
+  "data" => $value,
+];
+""".format(json.dumps({"interface": interface, "mac": mac}))
+
+        response = self._exec_php(script)
+        return response["data"]
 
     @_log_errors
     def get_telemetry(self):
@@ -612,6 +969,7 @@ $toreturn = ["data" => send_wol($if, $mac)];
 require_once '/etc/inc/util.inc';
 global $xmlrpclockkey;
 unlock($xmlrpclockkey);
+
 require_once '/usr/local/www/includes/functions.inc.php';
 require_once '/etc/inc/config.inc';
 require_once '/etc/inc/pfsense-utils.inc';
@@ -624,9 +982,12 @@ require_once '/etc/inc/ipsec.inc';
 global $config;
 global $g;
 
-function stripalpha($s) { return preg_replace("/\\D/", "", $s); }
+function stripalpha($s) {
+  return preg_replace("/\\\\D/", "", $s);
+}
 
-$mbuf = null; $mbufpercent = null;
+$mbuf = null;
+$mbufpercent = null;
 get_mbuf($mbuf, $mbufpercent);
 $mbuf_parts = explode("/", $mbuf);
 
@@ -635,42 +996,65 @@ $ifdescrs = get_configured_interface_with_descr();
 
 $boottime = exec_command("sysctl kern.boottime");
 preg_match("/sec = [0-9]*/", $boottime, $matches);
-$boottime = (int) trim(explode("=", $matches[0])[1]);
+$boottime = $matches[0];
+$boottime = explode("=", $boottime)[1];
+$boottime = (int) trim($boottime);
 
 $pfstate = get_pfstate();
 $pfstate_parts = explode("/", $pfstate);
+
 $cpu_usage = cpu_usage();
 $cpu_usage_parts = explode("|", $cpu_usage);
+
 $system_load_average = get_load_average();
 $system_load_average_parts = explode(",", $system_load_average);
+
 $cpu_frequency = get_cpufreq();
 $cpu_frequency_parts = explode(",", $cpu_frequency);
 
 $memory_info = exec_command("sysctl hw.physmem hw.usermem hw.realmem vm.swap_total vm.swap_reserved");
 $memory_parts = explode("\n", $memory_info);
+
 $ovpn_servers = openvpn_get_active_servers();
 
-$wan_ip = get_interface_ip("wan");
-$pfb_status = false;
-if (isset($config['installedpackages']['pfblockerng']['config'][0]['enable'])) {
-    $pfb_status = ($config['installedpackages']['pfblockerng']['config'][0]['enable'] === 'on');
+$wan_interface_key = 'wan';
+foreach ($config['interfaces'] as $ifk => $ifv) {
+    if ($ifk == 'wan') {
+        $wan_interface_key = $ifk;
+        break;
+    }
+}
+$wan_ip_address = get_interface_ip($wan_interface_key);
+
+$dnsbl_blocks = 0;
+$ip_blocks = 0;
+if (file_exists('/var/log/pfblockerng/dnsbl.log')) {
+    $dnsbl_blocks = (int)exec_command("wc -l < /var/log/pfblockerng/dnsbl.log");
+}
+if (file_exists('/var/log/pfblockerng/ip_block.log')) {
+    $ip_blocks = (int)exec_command("wc -l < /var/log/pfblockerng/ip_block.log");
 }
 
 $toreturn = [
-  "wan_ip" => $wan_ip,
+  "wan_ip" => $wan_ip_address ? $wan_ip_address : "Disconnected",
+  
   "pfblockerng" => [
-      "enabled" => $pfb_status
+    "dnsbl_blocks" => $dnsbl_blocks,
+    "ip_blocks" => $ip_blocks,
   ],
+
   "pfstate" => [
     "used" => (int) $pfstate_parts[0],
     "total" => (int) $pfstate_parts[1],
     "used_percent" => get_pfstate(true),
   ],
+
   "mbuf" => [
     "used" => (int) $mbuf_parts[0],
     "total" => (int) $mbuf_parts[1],
     "used_percent" => floatval($mbufpercent),
   ],
+
   "memory" => [
     "swap_used_percent" => floatval(swap_usage()),
     "used_percent" => floatval(mem_usage()),
@@ -680,6 +1064,7 @@ $toreturn = [
     "swap_total" => (int) trim(explode(":", $memory_parts[3])[1]),
     "swap_reserved" => (int) trim(explode(":", $memory_parts[4])[1]),
   ],
+
   "system" => [
     "boottime" => $boottime,
     "uptime" => (int) get_uptime_sec(),
@@ -690,6 +1075,7 @@ $toreturn = [
         "fifteen_minute" => floatval(trim($system_load_average_parts[2])),
     ],
   ],
+
   "cpu" => [
     "frequency" => [
         "current" => (int) stripalpha($cpu_frequency_parts[0]),
@@ -702,6 +1088,7 @@ $toreturn = [
         "idle" => (int) $cpu_usage_parts[1],
     ],
   ],
+
   "filesystems" => $filesystems,
   "interfaces" => [],
   "openvpn" => [],
@@ -711,110 +1098,201 @@ $toreturn = [
 ];
 
 foreach ($ifdescrs as $ifdescr => $ifname) {
-  $data = get_interface_info("{$ifdescr}");
+  $data = get_interface_info("${ifdescr}");
   $data["descr"] = $ifname;
   $data["ifname"] = $ifdescr;
-  $toreturn["interfaces"]["{$ifdescr}"] = $data;
+  $toreturn["interfaces"]["${ifdescr}"] = $data;
 }
 
 foreach ($ovpn_servers as $server) {
   $vpnid = $server["vpnid"];
-  $total_bytes_recv = 0; $total_bytes_sent = 0;
+  $name = $server["name"];
+  $conn_count = count($server["conns"]);
+
+  $total_bytes_recv = 0;
+  $total_bytes_sent = 0;
   foreach ($server["conns"] as $conn) {
     $total_bytes_recv += $conn["bytes_recv"];
     $total_bytes_sent += $conn["bytes_sent"];
   }
   
-  $toreturn["openvpn"]["servers"][$vpnid] = [
-      "name" => $server["name"],
-      "vpnid" => $vpnid,
-      "connected_client_count" => count($server["conns"]),
-      "total_bytes_recv" => $total_bytes_recv,
-      "total_bytes_sent" => $total_bytes_sent
-  ];
+  $toreturn["openvpn"]["servers"][$vpnid]["name"] = $name;
+  $toreturn["openvpn"]["servers"][$vpnid]["vpnid"] = $vpnid;
+  $toreturn["openvpn"]["servers"][$vpnid]["connected_client_count"] = $conn_count;
+  $toreturn["openvpn"]["servers"][$vpnid]["total_bytes_recv"] = $total_bytes_recv;
+  $toreturn["openvpn"]["servers"][$vpnid]["total_bytes_sent"] = $total_bytes_sent;
 }
 """
         data = self._exec_php(script)
+
         for fs in data["filesystems"]:
             fs["percent_used"] = int(fs["percent_used"])
+
         if isinstance(data["gateways"], list):
             data["gateways"] = {}
+
         return data
 
     @_log_errors
-    def enable_pfblockerng(self):
+    def update_alias_address(self, alias_name: str, address: str, action: str = "add", kill_states: bool = True):
+        """Dynamically add or remove an IP/Host from a pfSense alias group, reload filters, and terminate target state sessions."""
         script = """
-require_once '/etc/inc/util.inc';
-global $xmlrpclockkey; unlock($xmlrpclockkey);
-global $config;
-if (isset($config['installedpackages']['pfblockerng'])) {
-    $config['installedpackages']['pfblockerng']['config'][0]['enable'] = 'on';
-    write_config("Home Assistant: Enabled pfBlockerNG");
-    mwexec_bg("/usr/local/bin/php /usr/local/www/pfblockerng/pfblockerng.php dc >> /var/log/pfblockerng/pfblockerng.log 2>&1");
-}
-$toreturn = ["data" => true];
-"""
-        self._exec_php(script)
+        require_once('/etc/inc/util.inc');
+        require_once('/etc/inc/config.inc');
+        require_once('/etc/inc/filter.inc');
 
-    @_log_errors
-    def disable_pfblockerng(self):
-        script = """
-require_once '/etc/inc/util.inc';
-global $xmlrpclockkey; unlock($xmlrpclockkey);
-global $config;
-if (isset($config['installedpackages']['pfblockerng'])) {
-    $config['installedpackages']['pfblockerng']['config'][0]['enable'] = '';
-    write_config("Home Assistant: Disabled pfBlockerNG");
-    mwexec_bg("/usr/local/bin/php /usr/local/www/pfblockerng/pfblockerng.php dc >> /var/log/pfblockerng/pfblockerng.log 2>&1");
-}
-$toreturn = ["data" => true];
-"""
-        self._exec_php(script)
+        $data = json_decode('{}', true);
+        $alias_name = $data["alias_name"];
+        $address = trim($data["address"]);
+        $action = $data["action"];
+        $kill_states = (bool)$data["kill_states"];
+
+        global $config;
+        if (!is_array($config['aliases']['alias'])) {{
+            $config['aliases']['alias'] = [];
+        }}
+
+        // Safely normalize single-item vs multi-item array nesting quirks
+        if (count($config['aliases']['alias']) > 0 && !isset($config['aliases']['alias'][0])) {{
+            $config['aliases']['alias'] = array($config['aliases']['alias']);
+        }}
+
+        $found_idx = -1;
+        foreach ($config['aliases']['alias'] as $idx => $alias) {{
+            if ($alias['name'] == $alias_name) {{
+                $found_idx = $idx;
+                break;
+            }}
+        }}
+
+        if ($found_idx == -1 && $action == 'add') {{
+            $new_alias = [
+                'name' => $alias_name,
+                'type' => 'host',
+                'address' => $address,
+                'descr' => 'Managed automatically by Home Assistant',
+                'detail' => 'Added via HASS'
+            ];
+            $config['aliases']['alias'][] = $new_alias;
+        }} elseif ($found_idx != -1) {{
+            $addresses = array_filter(explode(' ', $config['aliases']['alias'][$found_idx]['address']));
+            $details = array_filter(explode('||', $config['aliases']['alias'][$found_idx]['detail']));
+            
+            $key = array_search($address, $addresses);
+            
+            if ($action == 'add' && $key === false) {{
+                $addresses[] = $address;
+                $details[] = 'Added via HASS';
+            }} elseif ($action == 'remove' && $key !== false) {{
+                unset($addresses[$key]);
+                unset($details[$key]);
+            }}
+            
+            $config['aliases']['alias'][$found_idx]['address'] = implode(' ', $addresses);
+            $config['aliases']['alias'][$found_idx]['detail'] = implode('||', $details);
+        }}
+
+        write_config("Modified alias " . $alias_name . " via Home Assistant");
+        filter_configure();
+
+        // Target and kill the states so the device drops immediately
+        if ($kill_states && !empty($address)) {{
+            mwexec("/sbin/pfctl -k " . escapeshellarg($address));
+            mwexec("/sbin/pfctl -k 0.0.0.0/0 -k " . escapeshellarg($address));
+        }}
+
+        $toreturn = ["data" => true];
+        """.format(json.dumps({"alias_name": alias_name, "address": address, "action": action, "kill_states": kill_states}))
+        
+        response = self._exec_php(script)
+        return response["data"]
+
 
     @_log_errors
     def are_notices_pending(self, category="all"):
-        script = f"""
+        script = """
 require_once '/etc/inc/util.inc';
 global $xmlrpclockkey;
 unlock($xmlrpclockkey);
-$data = json_decode('{json.dumps({"category": category})}', true);
-$toreturn = ["data" => are_notices_pending($data["category"])];
-"""
-        return self._exec_php(script)["data"]
+
+$data = json_decode('{}', true);
+$category = $data["category"];
+$toreturn = [
+  "data" => are_notices_pending($category),
+];
+""".format(json.dumps({"category": category}))
+
+        response = self._exec_php(script)
+        return response["data"]
 
     @_log_errors
     def get_notices(self, category="all"):
-        script = f"""
+        script = """
 require_once '/etc/inc/util.inc';
 global $xmlrpclockkey;
 unlock($xmlrpclockkey);
-$data = json_decode('{json.dumps({"category": category})}', true);
-$value = get_notices($data["category"]);
-$toreturn = ["data" => $value ? $value : false];
-"""
-        value = self._exec_php(script)["data"]
-        if value is False: return []
-        
+
+$data = json_decode('{}', true);
+$category = $data["category"];
+$value = get_notices($category);
+if (!$value) {{
+    $value = false;
+}}
+$toreturn = [
+  "data" => $value,
+];
+""".format(json.dumps({"category": category}))
+
+        response = self._exec_php(script)
+        value = response["data"]
+        if value is False:
+            return []
+
         notices = []
         for key in value.keys():
             notice = value.get(key)
             notice["created_at"] = key
             notices.append(notice)
+
         return notices
 
     @_log_errors
     def file_notice(self, id, notice, category="General", url="", priority=1, local_only=False):
-        script = f"""
-$data = json_decode('{json.dumps({"id": id, "notice": notice, "category": category, "url": url, "priority": priority, "local_only": local_only})}', true);
-$toreturn = ["data" => file_notice($data["id"], $data["notice"], $data["category"], $data["url"], $data["priority"], $data["local_only"])];
-"""
-        return self._exec_php(script)["data"]
+        script = """
+$data = json_decode('{}', true);
+$id = $data["id"];
+$notice = $data["notice"];
+$category = $data["category"];
+$url = $data["url"];
+$priority = $data["priority"];
+$local_only = $data["local_only"];
+
+$value = file_notice($id, $notice, $category, $url, $priority, $local_only);
+$toreturn = [
+  "data" => $value,
+];
+""".format(json.dumps({
+            "id": id,
+            "notice": notice,
+            "category": category,
+            "url": url,
+            "priority": priority,
+            "local_only": local_only,
+        }))
+
+        response = self._exec_php(script)
+        return response["data"]
 
     @_log_errors
     def close_notice(self, id):
-        script = f"""
-$data = json_decode('{json.dumps({"id": id})}', true);
-close_notice($data["id"]);
-$toreturn = ["data" => true];
-"""
-        return self._exec_php(script)["data"]
+        script = """
+$data = json_decode('{}', true);
+$id = $data["id"];
+close_notice($id);
+$toreturn = [
+  "data" => true,
+];
+""".format(json.dumps({"id": id}))
+
+        response = self._exec_php(script)
+        return response["data"]

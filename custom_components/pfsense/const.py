@@ -22,7 +22,7 @@ DOMAIN = "pfsense"
 
 UNDO_UPDATE_LISTENER = "undo_update_listener"
 
-PLATFORMS = ["binary_sensor", "button", "device_tracker", "sensor", "switch", "update"]
+PLATFORMS = ["sensor", "switch", "device_tracker", "binary_sensor", "update"]
 LOADED_PLATFORMS = "loaded_platforms"
 
 PFSENSE_CLIENT = "pfsense_client"
@@ -48,7 +48,6 @@ CONF_DEVICES = "devices"
 
 COUNT = "count"
 
-# pulled from upnp component
 BYTES_RECEIVED = "bytes_received"
 BYTES_SENT = "bytes_sent"
 PACKETS_RECEIVED = "packets_received"
@@ -59,7 +58,25 @@ DATA_RATE_PACKETS_PER_SECOND = f"{DATA_PACKETS}/{UnitOfTime.SECONDS}"
 ICON_MEMORY = "mdi:memory"
 
 SENSOR_TYPES: Final[dict[str, SensorEntityDescription]] = {
-    # pfstate
+    "telemetry.wan_ip": SensorEntityDescription(
+        key="telemetry.wan_ip",
+        name="WAN IP Address",
+        icon="mdi:public",
+    ),
+    "telemetry.pfblockerng.dnsbl_blocks": SensorEntityDescription(
+        key="telemetry.pfblockerng.dnsbl_blocks",
+        name="pfBlockerNG DNSBL Blocks",
+        native_unit_of_measurement=COUNT,
+        icon="mdi:shield-dns",
+        state_class=SensorStateClass.MEASUREMENT,
+    ),
+    "telemetry.pfblockerng.ip_blocks": SensorEntityDescription(
+        key="telemetry.pfblockerng.ip_blocks",
+        name="pfBlockerNG IP Blocks",
+        native_unit_of_measurement=COUNT,
+        icon="mdi:shield-lock",
+        state_class=SensorStateClass.MEASUREMENT,
+    ),
     "telemetry.pfstate.used": SensorEntityDescription(
         key="telemetry.pfstate.used",
         name="pf State Table Used",
@@ -80,7 +97,6 @@ SENSOR_TYPES: Final[dict[str, SensorEntityDescription]] = {
         icon="mdi:table-network",
         state_class=SensorStateClass.MEASUREMENT,
     ),
-    # mbuf
     "telemetry.mbuf.used": SensorEntityDescription(
         key="telemetry.mbuf.used",
         name="Memory Buffers Used",
@@ -101,7 +117,6 @@ SENSOR_TYPES: Final[dict[str, SensorEntityDescription]] = {
         icon=ICON_MEMORY,
         state_class=SensorStateClass.MEASUREMENT,
     ),
-    # memory with state_class due to being less static
     "telemetry.memory.usermem": SensorEntityDescription(
         key="telemetry.memory.usermem",
         name="Memory Usermem",
@@ -116,7 +131,6 @@ SENSOR_TYPES: Final[dict[str, SensorEntityDescription]] = {
         icon=ICON_MEMORY,
         state_class=SensorStateClass.MEASUREMENT,
     ),
-    # memory without state_class due to being generally static
     "telemetry.memory.physmem": SensorEntityDescription(
         key="telemetry.memory.physmem",
         name="Memory Physmem",
@@ -135,7 +149,6 @@ SENSOR_TYPES: Final[dict[str, SensorEntityDescription]] = {
         native_unit_of_measurement=UnitOfInformation.BYTES,
         icon=ICON_MEMORY,
     ),
-    # memory percentages
     "telemetry.memory.swap_used_percent": SensorEntityDescription(
         key="telemetry.memory.swap_used_percent",
         name="Memory Swap Used Percentage",
@@ -150,7 +163,6 @@ SENSOR_TYPES: Final[dict[str, SensorEntityDescription]] = {
         icon=ICON_MEMORY,
         state_class=SensorStateClass.MEASUREMENT,
     ),
-    # cpu
     "telemetry.cpu.used_percent": SensorEntityDescription(
         key="telemetry.cpu.used_percent",
         name="CPU Usage",
@@ -195,7 +207,6 @@ SENSOR_TYPES: Final[dict[str, SensorEntityDescription]] = {
         icon="mdi:speedometer-slow",
         state_class=SensorStateClass.MEASUREMENT,
     ),
-    # system
     "telemetry.system.temp": SensorEntityDescription(
         key="telemetry.system.temp",
         name="System Temperature",
@@ -210,7 +221,6 @@ SENSOR_TYPES: Final[dict[str, SensorEntityDescription]] = {
         device_class=SensorDeviceClass.TIMESTAMP,
         icon="mdi:clock-outline",
     ),
-    # dhcp
     "dhcp_stats.leases.total": SensorEntityDescription(
         key="dhcp_stats.leases.total",
         name="DHCP Leases Total",

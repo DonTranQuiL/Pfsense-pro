@@ -1,30 +1,47 @@
+update_alias:
+  name: Update Firewall Alias
+  description: Dynamically adds or removes an IP address or hostname from a pfSense alias group.
+  fields:
+    entity_id:
+      name: Entity ID
+      description: Any active pfSense tracking entity id to route the command.
+      required: true
+      example: "binary_sensor.pfsense_localdomain_pending_notices_present"
+    alias_name:
+      name: Alias Name
+      description: The exact name of the alias group in pfSense (e.g., Kids_Devices).
+      required: true
+      example: "Kids_Devices"
+    address:
+      name: Target Address
+      description: The exact IP address or Hostname to add or remove.
+      required: true
+      example: "192.168.1.50"
+    action:
+      name: Action
+      description: Select whether to add the address to isolate it or remove it to restore access.
+      required: true
+      default: "add"
+      selector:
+        select:
+          options:
+            - "add"
+            - "remove"
+
 close_notice:
-  # Service name as shown in UI
   name: Close notice
-  # Description of the service
   description: Closes a notice(s).
-  # If the service accepts entity IDs, target allows the user to specify entities by entity, device, or area. If `target` is specified, `entity_id` should not be defined in the `fields` map. By default it shows only targets matching entities from the same domain as the service, but if further customization is required, target supports the entity, device, and area selectors (https://www.home-assistant.io/docs/blueprint/selectors/). Entity selector parameters will automatically be applied to device and area, and device selector parameters will automatically be applied to area. 
-  #target:
-  # Different fields that your service accepts
   fields:
     entity_id:
       name: Entity ID
       description: pfSense entity id
       example: "binary_sensor.pfsense_localdomain_pending_notices_present"
-
-    # Key of the field
     id:
-      # Field name as shown in UI
       name: Notice ID
-      # Description of the field
       description: The notice ID
-      # Whether or not field is required (default = false)
       required: false
-      # Advanced fields are only shown when the advanced mode is enabled for the user (default = false)
       advanced: false
-      # Example value that can be passed for this field
       example: "all"
-      # The default field value
       default: "all"
 
 file_notice:
@@ -35,7 +52,6 @@ file_notice:
       name: Entity ID
       description: pfSense entity id
       example: "binary_sensor.pfsense_localdomain_pending_notices_present"
-
     id:
       name: Notice ID
       description: The notice ID
@@ -43,7 +59,6 @@ file_notice:
       advanced: false
       example: "all"
       default: "all"
-
     notice:
       name: Notice message
       description: The notice message
@@ -51,7 +66,6 @@ file_notice:
       advanced: false
       example: "hello world from hass"
       default: ""
-
     category:
       name: Notice category
       description: The category of the notice
@@ -59,7 +73,6 @@ file_notice:
       advanced: true
       example: "General"
       default: "HASS"
-
     url:
       name: Notice url
       description: The url of the notice
@@ -67,7 +80,6 @@ file_notice:
       advanced: true
       example: "https://example.com"
       default: ""
-
     priority:
       name: Notice priority
       description: The priority of the notice
@@ -75,7 +87,6 @@ file_notice:
       advanced: true
       example: 1
       default: 1
-
     local_only:
       name: Only show in the UI
       description: Do not send the notice via email, etc
@@ -177,7 +188,6 @@ kill_states:
       name: Entity ID
       description: pfSense entity id
       example: "binary_sensor.pfsense_localdomain_pending_notices_present"
-
     source:
       name: Source
       description: Host or network
@@ -185,7 +195,6 @@ kill_states:
       advanced: false
       example: "0.0.0.0/0"
       default: ""
-      
     destination: 
       name: Destination
       description: Host or network (optional)
@@ -220,7 +229,6 @@ send_wol:
       name: Entity ID
       description: pfSense entity id
       example: "binary_sensor.pfsense_localdomain_pending_notices_present"
-
     interface:
       name: Interface Name
       description: The name of the interface.
@@ -228,7 +236,6 @@ send_wol:
       advanced: false
       example: "wan|lan|opt1|opt2|..."
       default: ""
-
     mac:
       name: MAC Address
       description: The target mac address.
@@ -245,7 +252,6 @@ set_default_gateway:
       name: Entity ID
       description: pfSense entity id
       example: "binary_sensor.pfsense_localdomain_pending_notices_present"
-
     gateway:
       name: Gateway Name
       description: The name of the gateway.
@@ -253,7 +259,6 @@ set_default_gateway:
       advanced: false
       example: "GW_WAN, '-' is None and '' is Automatice"
       default: ""
-
     ip_version:
       name: IP Version
       description: The IP version to update.
@@ -270,7 +275,6 @@ exec_php:
       name: Entity ID
       description: pfSense entity id
       example: "binary_sensor.pfsense_localdomain_pending_notices_present"
-
     script:
       name: Gateway Name
       description: The name of the gateway.
@@ -287,7 +291,6 @@ exec_command:
       name: Entity ID
       description: pfSense entity id
       example: "binary_sensor.pfsense_localdomain_pending_notices_present"
-
     command:
       name: Command
       description: The command to run.
@@ -295,4 +298,3 @@ exec_command:
       advanced: false
       example: "ping -c 1 yahoo.com"
       default: ""
-

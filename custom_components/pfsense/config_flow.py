@@ -31,6 +31,7 @@ from .const import (
     DEFAULT_VERIFY_SSL,
     DOMAIN,
 )
+from .pypfsense import Client
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -59,6 +60,9 @@ class ConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 name = user_input.get(CONF_NAME, False) or None
 
                 url = user_input[CONF_URL].strip()
+                # ParseResult(
+                #     scheme='', netloc='', path='f', params='', query='', fragment=''
+                # )
                 url_parts = urlparse(url)
                 if len(url_parts.scheme) < 1:
                     raise InvalidURL()
@@ -72,8 +76,6 @@ class ConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 password = user_input[CONF_PASSWORD]
                 verify_ssl = user_input.get(CONF_VERIFY_SSL, DEFAULT_VERIFY_SSL)
 
-                # FIX: Import verplaatst naar binnen de functie om de event loop niet te blokkeren!
-                from .pypfsense import Client
                 client = Client(url, username, password, {"verify_ssl": verify_ssl})
                 system_info = await self.hass.async_add_executor_job(
                     client.get_system_info
@@ -100,6 +102,10 @@ class ConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                     },
                 )
 
+            # can be when using http instead of https
+            # 2022-08-16 09:43:17.803 ERROR (MainThread) [custom_components.opnsense.config_flow] Unexpected err=RemoteDisconnected('Remote end closed connection without response'), type(err)=<class 'http.client.RemoteDisconnected'>
+            # when proper permissions are not setup
+            # 2022-08-16 09:43:26.680 ERROR (MainThread) [custom_components.opnsense.config_flow] Unexpected err=TypeError('string indices must be integers'), type(err)=<class 'TypeError'>
             except InvalidURL:
                 errors["base"] = "invalid_url_format"
             except xmlrpc.client.Fault as err:
@@ -125,11 +131,15 @@ class ConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                     _LOGGER.error(message)
                     errors["base"] = "cannot_connect"
             except OSError as err:
+                # bad response from pfSense when creds are valid but authorization is
+                # not sufficient non-admin users must have 'System - HA node sync'
+                # privilege
                 if "unsupported XML-RPC protocol" in str(err):
                     errors["base"] = "privilege_missing"
                 elif "timed out" in str(err):
                     errors["base"] = "connect_timeout"
                 elif "SSL:" in str(err):
+                    """OSError: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1129)"""
                     errors["base"] = "cannot_connect_ssl"
                 else:
                     message = cleanse_sensitive_data(
@@ -230,11 +240,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         username = self.config_entry.data.get(CONF_USERNAME, DEFAULT_USERNAME)
         password = self.config_entry.data[CONF_PASSWORD]
         verify_ssl = self.config_entry.data.get(CONF_VERIFY_SSL, DEFAULT_VERIFY_SSL)
-        
-        # FIX: Import verplaatst naar binnen de functie
-        from .pypfsense import Client
         client = Client(url, username, password, {"verify_ssl": verify_ssl})
-        
         if user_input is None and (
             arp_table := await self.hass.async_add_executor_job(
                 client.get_arp_table, True
@@ -242,10 +248,12 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         ):
             selected_devices = self.config_entry.options.get(CONF_DEVICES, [])
 
+            # dicts are ordered so put all previously selected items at the top
             entries = {}
             for device in selected_devices:
                 entries[device] = device
 
+            # follow with all arp table entries
             for entry in arp_table:
                 mac = entry.get("mac-address", "").lower()
                 if len(mac) < 1:
@@ -273,4 +281,4 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
 
 
 class InvalidURL(Exception):
-    """InvalidURL."""
+    """InavlidURL."""

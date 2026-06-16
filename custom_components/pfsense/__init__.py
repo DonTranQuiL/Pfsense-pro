@@ -1,8 +1,7 @@
-"""Support for pfSense (GOLDEN BUILD - Cache & Safe)."""
+"""Support for pfSense (GOUDEN BUILD - Cache & Veilig)."""
 
 from __future__ import annotations
 
-import asyncio
 import copy
 from datetime import timedelta
 import logging
@@ -11,6 +10,7 @@ import re
 import time
 from typing import Callable
 
+import async_timeout
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     CONF_PASSWORD,
@@ -21,7 +21,6 @@ from homeassistant.const import (
 )
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.entity_registry import async_get
 from homeassistant.helpers.restore_state import RestoreEntity
 from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
@@ -56,6 +55,7 @@ _LOGGER = logging.getLogger(__name__)
 # --- SMART CACHE LOGIC ---
 STORAGE_VERSION = 1
 
+
 async def async_save_cache(hass: HomeAssistant, entry_id: str, data: dict):
     """Save state to local cache."""
     store = Store(hass, STORAGE_VERSION, f"{DOMAIN}_{entry_id}_cache")
@@ -63,6 +63,7 @@ async def async_save_cache(hass: HomeAssistant, entry_id: str, data: dict):
         await store.async_save(data)
     except Exception as e:
         _LOGGER.error(f"Failed to save pfSense cache: {e}")
+
 
 async def async_load_cache(hass: HomeAssistant, entry_id: str):
     """Load state from local cache."""
@@ -72,19 +73,23 @@ async def async_load_cache(hass: HomeAssistant, entry_id: str):
     except Exception as e:
         _LOGGER.error(f"Failed to load pfSense cache: {e}")
         return None
+
+
 # -------------------------
 
+
 def dict_get(data: dict, path: str, default=None):
-    path_list = path.split(".")
+    pathList = re.split(r"\.", path, flags=re.IGNORECASE)
     result = data
-    for key in path_list:
+    for key in pathList:
         try:
             key = int(key) if key.isnumeric() else key
             result = result[key]
-        except (KeyError, TypeError, IndexError):
+        except Exception:
             result = default
             break
     return result
+
 
 async def _async_update_listener(hass: HomeAssistant, entry: ConfigEntry):
     """Handle options update."""
@@ -92,6 +97,7 @@ async def _async_update_listener(hass: HomeAssistant, entry: ConfigEntry):
         hass.async_create_task(hass.config_entries.async_reload(entry.entry_id))
     else:
         hass.data[DOMAIN][entry.entry_id][SHOULD_RELOAD] = True
+
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     """Set up pfSense from a config entry."""
@@ -105,7 +111,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     device_tracker_enabled = options.get(
         CONF_DEVICE_TRACKER_ENABLED, DEFAULT_DEVICE_TRACKER_ENABLED
     )
-    
+
     client = pfSenseClient(url, username, password, {"verify_ssl": verify_ssl})
     data = PfSenseData(client, entry, hass)
     scan_interval = options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
@@ -113,23 +119,25 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     async def async_update_data():
         """Fetch data from pfSense."""
         try:
-            async with asyncio.timeout(scan_interval - 1):
-                # Fully asynchronous and safe via the background thread!
+            async with async_timeout.timeout(scan_interval - 1):
+                # Volledig asynchroon en veilig via de achtergrond thread!
                 new_state = await hass.async_add_executor_job(data.update)
                 if not new_state:
-                    raise UpdateFailed("No data received from pfSense")
-                
-                # Save to the Smart Cache!
+                    raise UpdateFailed("Geen data ontvangen van pfSense")
+
+                # Sla op in de Smart Cache!
                 await async_save_cache(hass, entry.entry_id, new_state)
                 return new_state
-                
+
         except Exception as err:
-            _LOGGER.warning(f"Error fetching pfSense: {err}. Attempting to load cache...")
+            _LOGGER.warning(
+                f"Fout bij ophalen pfSense: {err}. We proberen de cache te laden..."
+            )
             cached_data = await async_load_cache(hass, entry.entry_id)
             if cached_data:
-                data._state = cached_data # Restore internal state
+                data._state = cached_data  # Zet de interne state terug
                 return cached_data
-            raise UpdateFailed(f"Error and no cache available: {err}")
+            raise UpdateFailed(f"Fout en geen cache beschikbaar: {err}")
 
     coordinator = DataUpdateCoordinator(
         hass,
@@ -152,15 +160,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         async def async_update_device_tracker_data():
             """Fetch data from pfSense."""
             try:
-                async with asyncio.timeout(device_tracker_scan_interval - 1):
+                async with async_timeout.timeout(device_tracker_scan_interval - 1):
                     new_dt_state = await hass.async_add_executor_job(
                         lambda: device_tracker_data.update({"scope": "device_tracker"})
                     )
                     if not new_dt_state:
-                        raise UpdateFailed("No device tracker data received")
+                        raise UpdateFailed("Geen device tracker data ontvangen")
                     return new_dt_state
             except Exception as err:
-                _LOGGER.warning(f"Device tracker update failed: {err}")
+                _LOGGER.warning(f"Device tracker update faalde: {err}")
                 if device_tracker_data._state:
                     return device_tracker_data._state
                 raise UpdateFailed(err)
@@ -195,6 +203,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
     return True
 
+
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
     platforms = hass.data[DOMAIN][entry.entry_id][LOADED_PLATFORMS]
@@ -207,6 +216,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         hass.data[DOMAIN].pop(entry.entry_id)
 
     return unload_ok
+
 
 async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
     """Migrate an old config entry."""
@@ -222,8 +232,11 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
         hass.config_entries.async_update_entry(config_entry, data=data)
     return True
 
+
 class PfSenseData:
-    def __init__(self, client: pfSenseClient, config_entry: ConfigEntry, hass: HomeAssistant):
+    def __init__(
+        self, client: pfSenseClient, config_entry: ConfigEntry, hass: HomeAssistant
+    ):
         """Initialize the data object."""
         self._client = client
         self._config_entry = config_entry
@@ -236,22 +249,24 @@ class PfSenseData:
         return self._state
 
     def update(self, opts={}):
-        """Fetch the latest state from pfSense. Runs synchronously in executor."""
+        """Fetch the latest state from pfSense. Draait synchroon in executor."""
         new_state = {}
 
         try:
             current_time = time.time()
             previous_state = copy.deepcopy(self._state)
-            if "previous_state" in previous_state:
+            if "previous_state" in previous_state.keys():
                 del previous_state["previous_state"]
 
             new_state["update_time"] = current_time
             new_state["previous_state"] = previous_state
 
             new_state["system_info"] = self._client.get_system_info()
-            new_state["host_firmware_version"] = self._client.get_host_firmware_version()
+            new_state["host_firmware_version"] = (
+                self._client.get_host_firmware_version()
+            )
 
-            if "scope" in opts and opts["scope"] == "device_tracker":
+            if "scope" in opts.keys() and opts["scope"] == "device_tracker":
                 try:
                     new_state["arp_table"] = self._client.get_arp_table(True)
                 except BaseException as err:
@@ -260,9 +275,9 @@ class PfSenseData:
                 try:
                     self._firmware_update_info = self._client.get_firmware_update_info()
                 except Exception:
-                    pass # Timeout or error, we'll catch it next time
-                
-                # Fetch telemetry (including our new WAN IP and pfBlockerNG data!)
+                    pass  # Timeout of fout, we pakken hem volgende keer
+
+                # Haal de telemetrie op (inclusief onze nieuwe WAN IP en pfBlockerNG data!)
                 telemetry_data = self._client.get_telemetry()
 
                 new_state["firmware_update_info"] = self._firmware_update_info
@@ -276,27 +291,31 @@ class PfSenseData:
                 new_state["dhcp_stats"] = {}
                 new_state["notices"] = {
                     "pending_notices_present": self._client.are_notices_pending(),
-                    "pending_notices": self._client.get_notices()
+                    "pending_notices": self._client.get_notices(),
                 }
 
-                # Ensure specific keys are flattened in the telemetry dictionary for sensors
+                # Zorg dat de specifieke keys plat in de telemetry dictionary komen te staan voor de sensoren
                 new_state["telemetry"]["wan_ip"] = telemetry_data.get("wan_ip")
-                new_state["telemetry"]["pfblockerng"] = telemetry_data.get("pfblockerng")
+                new_state["telemetry"]["pfblockerng"] = telemetry_data.get(
+                    "pfblockerng"
+                )
 
                 lease_stats = {"total": 0, "online": 0, "idle_offline": 0}
                 for lease in new_state["dhcp_leases"]:
-                    if "act" in lease and lease["act"] == "expired":
+                    if "act" in lease.keys() and lease["act"] == "expired":
                         continue
                     lease_stats["total"] += 1
-                    if "online" in lease:
+                    if "online" in lease.keys():
                         if lease["online"] in ["active", "active/online", "online"]:
                             lease_stats["online"] += 1
                         if lease["online"] in ["offline", "idle/offline", "idle"]:
                             lease_stats["idle_offline"] += 1
                 new_state["dhcp_stats"]["leases"] = lease_stats
 
-                # Calculate PPS and KBPS
-                scan_interval = self._config_entry.options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
+                # Bereken PPS en KBPS
+                scan_interval = self._config_entry.options.get(
+                    CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL
+                )
                 update_time = dict_get(new_state, "update_time")
                 previous_update_time = dict_get(new_state, "previous_state.update_time")
 
@@ -306,24 +325,63 @@ class PfSenseData:
                     previous_cpu = dict_get(new_state, "previous_state.telemetry.cpu")
                     if previous_cpu is not None:
                         current_cpu = dict_get(new_state, "telemetry.cpu")
-                        if (dict_get(previous_cpu, "ticks.total") <= dict_get(current_cpu, "ticks.total")) and (dict_get(previous_cpu, "ticks.idle") <= dict_get(current_cpu, "ticks.idle")):
-                            total_change = dict_get(current_cpu, "ticks.total") - dict_get(previous_cpu, "ticks.total")
-                            idle_change = dict_get(current_cpu, "ticks.idle") - dict_get(previous_cpu, "ticks.idle")
+                        if (
+                            dict_get(previous_cpu, "ticks.total")
+                            <= dict_get(current_cpu, "ticks.total")
+                        ) and (
+                            dict_get(previous_cpu, "ticks.idle")
+                            <= dict_get(current_cpu, "ticks.idle")
+                        ):
+                            total_change = dict_get(
+                                current_cpu, "ticks.total"
+                            ) - dict_get(previous_cpu, "ticks.total")
+                            idle_change = dict_get(
+                                current_cpu, "ticks.idle"
+                            ) - dict_get(previous_cpu, "ticks.idle")
                             if total_change > 0:
-                                new_state["telemetry"]["cpu"]["used_percent"] = math.floor(((total_change - idle_change) / total_change) * 100)
+                                new_state["telemetry"]["cpu"]["used_percent"] = (
+                                    math.floor(
+                                        ((total_change - idle_change) / total_change)
+                                        * 100
+                                    )
+                                )
                             else:
-                                new_state["telemetry"]["cpu"]["used_percent"] = dict_get(previous_state, "telemetry.cpu.used_percent")
+                                new_state["telemetry"]["cpu"]["used_percent"] = (
+                                    dict_get(
+                                        previous_state, "telemetry.cpu.used_percent"
+                                    )
+                                )
 
-                    for interface_name in dict_get(new_state, "telemetry.interfaces", {}).keys():
-                        interface = dict_get(new_state, f"telemetry.interfaces.{interface_name}")
-                        previous_interface = dict_get(new_state, f"previous_state.telemetry.interfaces.{interface_name}")
+                    for interface_name in dict_get(
+                        new_state, "telemetry.interfaces", {}
+                    ).keys():
+                        interface = dict_get(
+                            new_state, f"telemetry.interfaces.{interface_name}"
+                        )
+                        previous_interface = dict_get(
+                            new_state,
+                            f"previous_state.telemetry.interfaces.{interface_name}",
+                        )
                         if previous_interface is None:
                             break
 
-                        for prop in ["inbytes", "outbytes", "inbytespass", "outbytespass", "inbytesblock", "outbytesblock", "inpkts", "outpkts", "inpktspass", "outpktspass", "inpktsblock", "outpktsblock"]:
+                        for prop in [
+                            "inbytes",
+                            "outbytes",
+                            "inbytespass",
+                            "outbytespass",
+                            "inbytesblock",
+                            "outbytesblock",
+                            "inpkts",
+                            "outpkts",
+                            "inpktspass",
+                            "outpktspass",
+                            "inpktsblock",
+                            "outpktsblock",
+                        ]:
                             change = abs(interface[prop] - previous_interface[prop])
                             rate = change / elapsed_time if elapsed_time > 0 else 0
-                            
+
                             if "pkts" in prop:
                                 label = "packets_per_second"
                                 value = rate
@@ -335,15 +393,37 @@ class PfSenseData:
                             if elapsed_time >= scan_interval:
                                 interface[new_property] = int(round(value, 0))
                             else:
-                                previous_value = dict_get(previous_interface, new_property)
-                                interface[new_property] = int(round(previous_value if previous_value is not None else value, 0))
+                                previous_value = dict_get(
+                                    previous_interface, new_property
+                                )
+                                interface[new_property] = int(
+                                    round(
+                                        previous_value
+                                        if previous_value is not None
+                                        else value,
+                                        0,
+                                    )
+                                )
 
-                    for server_name in dict_get(new_state, "telemetry.openvpn.servers", {}).keys():
-                        if server_name not in dict_get(new_state, "previous_state.telemetry.openvpn.servers", {}):
+                    for server_name in dict_get(
+                        new_state, "telemetry.openvpn.servers", {}
+                    ).keys():
+                        if (
+                            server_name
+                            not in dict_get(
+                                new_state,
+                                "previous_state.telemetry.openvpn.servers",
+                                {},
+                            ).keys()
+                        ):
                             continue
 
-                        server = new_state["telemetry"]["openvpn"]["servers"][server_name]
-                        previous_server = new_state["previous_state"]["telemetry"]["openvpn"]["servers"][server_name]
+                        server = new_state["telemetry"]["openvpn"]["servers"][
+                            server_name
+                        ]
+                        previous_server = new_state["previous_state"]["telemetry"][
+                            "openvpn"
+                        ]["servers"][server_name]
 
                         for prop in ["total_bytes_recv", "total_bytes_sent"]:
                             change = abs(server[prop] - previous_server[prop])
@@ -360,7 +440,8 @@ class PfSenseData:
 
 
 class CoordinatorEntityManager:
-    """GOLDEN BUILD: Smart Entity Manager prevents duplicates!"""
+    """GOUDEN BUILD: Slimme Entity Manager voorkomt duplicaten!"""
+
     def __init__(
         self,
         hass: HomeAssistant,
@@ -374,8 +455,8 @@ class CoordinatorEntityManager:
         self.config_entry = config_entry
         self.process_entities_callback = process_entities_callback
         self.async_add_entities = async_add_entities
-        
-        # Register the listener neatly without risking duplicates
+
+        # Registreer de listener netjes zonder duplicaten te riskeren
         self.hass.data[DOMAIN][config_entry.entry_id][UNDO_UPDATE_LISTENER].append(
             coordinator.async_add_listener(self.process_entities)
         )
@@ -385,18 +466,19 @@ class CoordinatorEntityManager:
     def process_entities(self):
         entities = self.process_entities_callback(self.hass, self.config_entry)
         new_entities = []
-        
+
         for entity in entities:
             if entity.unique_id not in self.entity_unique_ids:
                 new_entities.append(entity)
                 self.entity_unique_ids.add(entity.unique_id)
-        
+
         if new_entities:
             self.async_add_entities(new_entities)
 
 
 class PfSenseEntity(CoordinatorEntity, RestoreEntity):
     """base entity for pfSense"""
+
     @property
     def coordinator_context(self):
         return None
@@ -406,7 +488,7 @@ class PfSenseEntity(CoordinatorEntity, RestoreEntity):
         state = self.coordinator.data
         if not state or "host_firmware_version" not in state:
             return None
-            
+
         return {
             "identifiers": {(DOMAIN, self.pfsense_device_unique_id)},
             "name": self.pfsense_device_name,
@@ -438,13 +520,22 @@ class PfSenseEntity(CoordinatorEntity, RestoreEntity):
     def service_file_notice(self, **kwargs):
         self._get_pfsense_client().file_notice(**kwargs)
 
-    def service_start_service(self, service_name: str, service: dict | str | None = None):
+    def service_start_service(
+        self, service_name: str, service: dict | str | None = None
+    ):
         self._get_pfsense_client().start_service(service_name, service)
 
-    def service_stop_service(self, service_name: str, service: dict | str | None = None):
+    def service_stop_service(
+        self, service_name: str, service: dict | str | None = None
+    ):
         self._get_pfsense_client().stop_service(service_name, service)
 
-    def service_restart_service(self, service_name: str, only_if_running: int | str | None | bool = False, service: dict | str | None = None):
+    def service_restart_service(
+        self,
+        service_name: str,
+        only_if_running: int | str | None | bool = False,
+        service: dict | str | None = None,
+    ):
         client = self._get_pfsense_client()
         if str(only_if_running).lower() in ["true", "1"]:
             client.restart_service_if_running(service_name, service)

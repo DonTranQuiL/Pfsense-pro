@@ -8,7 +8,7 @@ from homeassistant.components.switch import (
     SwitchEntityDescription,
 )
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import STATE_UNKNOWN
+from homeassistant.const import STATE_UNKNOWN  # ENTITY_CATEGORY_CONFIG,
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import entity_platform
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
@@ -25,104 +25,172 @@ async def async_setup_entry(
     config_entry: ConfigEntry,
     async_add_entities: entity_platform.AddEntitiesCallback,
 ):
-    """Set up the pfSense switches."""
+    """Set up the pfSense binary sensors."""
 
     @callback
     def process_entities_callback(hass, config_entry):
         data = hass.data[DOMAIN][config_entry.entry_id]
         coordinator = data[COORDINATOR]
         state = coordinator.data
-        if not state:
-            return []
 
         entities = []
 
-        if dict_get(state, "telemetry.pfblockerng") is not None:
-            entity = PfSensePfBlockerNGSwitch(
-                config_entry,
-                coordinator,
-                SwitchEntityDescription(
-                    key="pfblockerng.enable",
-                    name="pfBlockerNG AdBlocker",
-                    icon="mdi:shield-half-full",
-                    device_class=SwitchDeviceClass.SWITCH,
-                ),
-            )
-            entities.append(entity)
-
         # filter rules
-        if "filter" in state["config"]:
+        if "filter" in state["config"].keys():
             rules = dict_get(state, "config.filter.rule")
             if isinstance(rules, list):
                 for rule in rules:
                     if not isinstance(rule, dict):
                         continue
-                    if "tracker" not in rule or "associated-rule-id" in rule:
+                    icon = "mdi:security-network"
+                    # likely only want very specific rules to manipulate from actions
+                    enabled_default = False
+                    # entity_category = ENTITY_CATEGORY_CONFIG
+                    device_class = SwitchDeviceClass.SWITCH
+
+                    if "tracker" not in rule.keys():
                         continue
-                    if rule.get("descr") == "Anti-Lockout Rule" or not rule.get("tracker"):
+
+                    # do NOT add rules that are NAT rules
+                    if "associated-rule-id" in rule.keys():
+                        continue
+
+                    # not possible to disable these rules
+                    if rule["descr"] == "Anti-Lockout Rule":
+                        continue
+
+                    tracker = rule["tracker"]
+                    if tracker is None:
+                        continue
+
+                    # we use tracker as the unique id
+                    if len(tracker) < 1:
                         continue
 
                     entity = PfSenseFilterSwitch(
                         config_entry,
                         coordinator,
                         SwitchEntityDescription(
-                            key=f"filter.{rule['tracker']}",
-                            name=f"Filter Rule {rule['tracker']} ({rule.get('descr', '')})",
-                            icon="mdi:security-network",
-                            device_class=SwitchDeviceClass.SWITCH,
-                            entity_registry_enabled_default=False,
+                            key="filter.{}".format(tracker),
+                            name="Filter Rule {} ({})".format(tracker, rule["descr"]),
+                            icon=icon,
+                            # entity_category=entity_category,
+                            device_class=device_class,
+                            entity_registry_enabled_default=enabled_default,
                         ),
                     )
                     entities.append(entity)
 
         # nat port forward rules
-        if "nat" in state["config"]:
+        if "nat" in state["config"].keys():
             rules = dict_get(state, "config.nat.rule")
             if isinstance(rules, list):
                 for rule in rules:
                     if not isinstance(rule, dict):
                         continue
+                    icon = "mdi:network"
+                    # likely only want very specific rules to manipulate from actions
+                    enabled_default = False
+                    # entity_category = ENTITY_CATEGORY_CONFIG
+                    device_class = SwitchDeviceClass.SWITCH
                     tracker = dict_get(rule, "created.time")
-                    if not tracker:
+                    if tracker is None:
+                        continue
+
+                    # we use tracker as the unique id
+                    if len(tracker) < 1:
                         continue
 
                     entity = PfSenseNatSwitch(
                         config_entry,
                         coordinator,
                         SwitchEntityDescription(
-                            key=f"nat_port_forward.{tracker}",
-                            name=f"NAT Port Forward {tracker} ({rule.get('descr', '')})",
-                            icon="mdi:network",
-                            device_class=SwitchDeviceClass.SWITCH,
-                            entity_registry_enabled_default=False,
+                            key="nat_port_forward.{}".format(tracker),
+                            name="NAT Port Forward Rule {} ({})".format(
+                                tracker, rule["descr"]
+                            ),
+                            icon=icon,
+                            # entity_category=entity_category,
+                            device_class=device_class,
+                            entity_registry_enabled_default=enabled_default,
+                        ),
+                    )
+                    entities.append(entity)
+
+        # nat outbound rules
+        if "nat" in state["config"].keys():
+            # to actually be applicable mode must by "hybrid" or "advanced"
+            rules = dict_get(state, "config.nat.outbound.rule")
+            if isinstance(rules, list):
+                for rule in rules:
+                    if not isinstance(rule, dict):
+                        continue
+                    icon = "mdi:network"
+                    # likely only want very specific rules to manipulate from actions
+                    enabled_default = False
+                    # entity_category = ENTITY_CATEGORY_CONFIG
+                    device_class = SwitchDeviceClass.SWITCH
+                    tracker = dict_get(rule, "created.time")
+                    if tracker is None:
+                        continue
+
+                    if "Auto created rule" in rule["descr"]:
+                        continue
+
+                    # we use tracker as the unique id
+                    if len(tracker) < 1:
+                        continue
+
+                    entity = PfSenseNatSwitch(
+                        config_entry,
+                        coordinator,
+                        SwitchEntityDescription(
+                            key="nat_outbound.{}".format(tracker),
+                            name="NAT Outbound Rule {} ({})".format(
+                                tracker, rule["descr"]
+                            ),
+                            icon=icon,
+                            # entity_category=entity_category,
+                            device_class=device_class,
+                            entity_registry_enabled_default=enabled_default,
                         ),
                     )
                     entities.append(entity)
 
         # services
-        for service in state.get("services", []):
-            icon = "mdi:application-cog-outline"
-            
-            if service["name"] == "openvpn":
-                key = f"service.{service['name']}-{service['vpnid']}.status"
-                name = f"Service {service['name']} {service.get('description', '')} status"
-            else:
-                key = f"service.{service['name']}.status"
-                name = f"Service {service['name']} status"
+        for service in state["services"]:
+            for property in ["status"]:
+                icon = "mdi:application-cog-outline"
+                # likely only want very specific services to manipulate from actions
+                enabled_default = False
+                # entity_category = ENTITY_CATEGORY_CONFIG
+                device_class = SwitchDeviceClass.SWITCH
 
-            entity = PfSenseServiceSwitch(
-                config_entry,
-                coordinator,
-                SwitchEntityDescription(
-                    key=key,
-                    name=name,
-                    icon=icon,
-                    device_class=SwitchDeviceClass.SWITCH,
-                    entity_registry_enabled_default=False,
-                ),
-            )
-            entities.append(entity)
+                if service["name"] == "openvpn":
+                    key = "service.{}.{}".format(
+                        service["name"] + "-" + service["vpnid"],
+                        property,
+                    )
+                    name = "Service {} {}".format(
+                        service["name"] + " " + service["description"], property
+                    )
+                else:
+                    key = "service.{}.{}".format(service["name"], property)
+                    name = "Service {} {}".format(service["name"], property)
 
+                entity = PfSenseServiceSwitch(
+                    config_entry,
+                    coordinator,
+                    SwitchEntityDescription(
+                        key=key,
+                        name=name,
+                        icon=icon,
+                        # entity_category=entity_category,
+                        device_class=device_class,
+                        entity_registry_enabled_default=enabled_default,
+                    ),
+                )
+                entities.append(entity)
         return entities
 
     cem = CoordinatorEntityManager(
@@ -142,6 +210,7 @@ class PfSenseSwitch(PfSenseEntity, SwitchEntity):
         coordinator: DataUpdateCoordinator,
         entity_description: SwitchEntityDescription,
     ) -> None:
+        """Initialize the entity."""
         self.config_entry = config_entry
         self.entity_description = entity_description
         self.coordinator = coordinator
@@ -151,35 +220,12 @@ class PfSenseSwitch(PfSenseEntity, SwitchEntity):
         )
 
     @property
-    def is_on(self) -> bool | None:
+    def is_on(self):
         return False
 
     @property
     def extra_state_attributes(self):
         return None
-
-class PfSensePfBlockerNGSwitch(PfSenseSwitch):
-    @property
-    def available(self) -> bool:
-        state = self.coordinator.data
-        if not state: return False
-        return dict_get(state, "telemetry.pfblockerng") is not None and super().available
-
-    @property
-    def is_on(self) -> bool | None:
-        state = self.coordinator.data
-        val = dict_get(state, "telemetry.pfblockerng.enabled", False)
-        return bool(val) if val is not None else None
-
-    async def async_turn_on(self, **kwargs):
-        client = self._get_pfsense_client()
-        await self.hass.async_add_executor_job(client.enable_pfblockerng)
-        await self.coordinator.async_request_refresh()
-
-    async def async_turn_off(self, **kwargs):
-        client = self._get_pfsense_client()
-        await self.hass.async_add_executor_job(client.disable_pfblockerng)
-        await self.coordinator.async_request_refresh()
 
 
 class PfSenseFilterSwitch(PfSenseSwitch):
@@ -188,41 +234,57 @@ class PfSenseFilterSwitch(PfSenseSwitch):
 
     def _pfsense_get_rule(self):
         state = self.coordinator.data
-        if not state: return None
+        found = None
         tracker = self._pfsense_get_tracker()
-        for rule in dict_get(state, "config.filter.rule", []):
-            if rule.get("tracker") == tracker:
-                return rule
-        return None
+        for rule in state["config"]["filter"]["rule"]:
+            if "tracker" not in rule.keys():
+                continue
+            if rule["tracker"] == tracker:
+                found = rule
+                break
+        return found
 
     @property
     def available(self) -> bool:
-        return self._pfsense_get_rule() is not None and super().available
-
-    @property
-    def is_on(self) -> bool | None:
         rule = self._pfsense_get_rule()
         if rule is None:
-            return None
-        return "disabled" not in rule
+            return False
+
+        return super().available
+
+    @property
+    def is_on(self):
+        rule = self._pfsense_get_rule()
+        if rule is None:
+            return STATE_UNKNOWN
+        try:
+            return "disabled" not in rule.keys()
+        except KeyError:
+            return STATE_UNKNOWN
 
     async def async_turn_on(self, **kwargs):
+        """Turn the entity on."""
         rule = self._pfsense_get_rule()
-        if rule is None: return
+        if rule is None:
+            return
+        tracker = self._pfsense_get_tracker()
         client = self._get_pfsense_client()
         await self.hass.async_add_executor_job(
-            client.enable_filter_rule_by_tracker, self._pfsense_get_tracker()
+            client.enable_filter_rule_by_tracker, tracker
         )
-        await self.coordinator.async_request_refresh()
+        await self.coordinator.async_refresh()
 
     async def async_turn_off(self, **kwargs):
+        """Turn the entity off."""
         rule = self._pfsense_get_rule()
-        if rule is None: return
+        if rule is None:
+            return
+        tracker = self._pfsense_get_tracker()
         client = self._get_pfsense_client()
         await self.hass.async_add_executor_job(
-            client.disable_filter_rule_by_tracker, self._pfsense_get_tracker()
+            client.disable_filter_rule_by_tracker, tracker
         )
-        await self.coordinator.async_request_refresh()
+        await self.coordinator.async_refresh()
 
 
 class PfSenseNatSwitch(PfSenseSwitch):
@@ -234,51 +296,70 @@ class PfSenseNatSwitch(PfSenseSwitch):
 
     def _pfsense_get_rule(self):
         state = self.coordinator.data
-        if not state: return None
+        found = None
         tracker = self._pfsense_get_tracker()
         rule_type = self._pfsense_get_rule_type()
-        
         rules = []
         if rule_type == "nat_port_forward":
-            rules = dict_get(state, "config.nat.rule", [])
+            rules = state["config"]["nat"]["rule"]
         if rule_type == "nat_outbound":
-            rules = dict_get(state, "config.nat.outbound.rule", [])
+            rules = state["config"]["nat"]["outbound"]["rule"]
 
         for rule in rules:
             if dict_get(rule, "created.time") == tracker:
-                return rule
-        return None
+                found = rule
+                break
+        return found
 
     @property
     def available(self) -> bool:
-        return self._pfsense_get_rule() is not None and super().available
-
-    @property
-    def is_on(self) -> bool | None:
         rule = self._pfsense_get_rule()
         if rule is None:
-            return None
-        return "disabled" not in rule
+            return False
+
+        return super().available
+
+    @property
+    def is_on(self):
+        rule = self._pfsense_get_rule()
+        if rule is None:
+            return STATE_UNKNOWN
+        try:
+            return "disabled" not in rule.keys()
+        except KeyError:
+            return STATE_UNKNOWN
 
     async def async_turn_on(self, **kwargs):
+        """Turn the entity on."""
         rule = self._pfsense_get_rule()
-        if rule is None: return
+        if rule is None:
+            return
+        tracker = self._pfsense_get_tracker()
         client = self._get_pfsense_client()
         rule_type = self._pfsense_get_rule_type()
-        
-        method = client.enable_nat_port_forward_rule_by_created_time if rule_type == "nat_port_forward" else client.enable_nat_outbound_rule_by_created_time
-        await self.hass.async_add_executor_job(method, self._pfsense_get_tracker())
-        await self.coordinator.async_request_refresh()
+        if rule_type == "nat_port_forward":
+            method = client.enable_nat_port_forward_rule_by_created_time
+        if rule_type == "nat_outbound":
+            method = client.enable_nat_outbound_rule_by_created_time
+
+        await self.hass.async_add_executor_job(method, tracker)
+        await self.coordinator.async_refresh()
 
     async def async_turn_off(self, **kwargs):
+        """Turn the entity off."""
         rule = self._pfsense_get_rule()
-        if rule is None: return
+        if rule is None:
+            return
+        tracker = self._pfsense_get_tracker()
         client = self._get_pfsense_client()
         rule_type = self._pfsense_get_rule_type()
-        
-        method = client.disable_nat_port_forward_rule_by_created_time if rule_type == "nat_port_forward" else client.disable_nat_outbound_rule_by_created_time
-        await self.hass.async_add_executor_job(method, self._pfsense_get_tracker())
-        await self.coordinator.async_request_refresh()
+        if rule_type == "nat_port_forward":
+            method = client.disable_nat_port_forward_rule_by_created_time
+        if rule_type == "nat_outbound":
+            method = client.disable_nat_outbound_rule_by_created_time
+
+        await self.hass.async_add_executor_job(method, tracker)
+        await self.coordinator.async_refresh()
 
 
 class PfSenseServiceSwitch(PfSenseSwitch):
@@ -290,47 +371,52 @@ class PfSenseServiceSwitch(PfSenseSwitch):
 
     def _pfsense_get_service(self):
         state = self.coordinator.data
-        if not state: return None
+        found = None
         service_name = self._pfsense_get_service_name()
-        
-        for service in state.get("services", []):
+        for service in state["services"]:
             if service_name.startswith("openvpn"):
+                # [ "openvpn", "<vpnid>""]
                 parts = service_name.split("-")
-                if service["name"] == parts[0] and str(service.get("vpnid")) == parts[1]:
-                    return service
+                if service["name"] == parts[0] and service["vpnid"] == parts[1]:
+                    found = service
             elif service["name"] == service_name:
-                return service
-        return None
+                found = service
+                break
+        return found
 
     @property
     def available(self) -> bool:
         service = self._pfsense_get_service()
-        property_name = self._pfsense_get_property_name()
-        return service is not None and property_name in service and super().available
+        property = self._pfsense_get_property_name()
+        if service is None or property not in service.keys():
+            return False
+
+        return super().available
 
     @property
-    def is_on(self) -> bool | None:
+    def is_on(self):
         service = self._pfsense_get_service()
-        if not service: return None
-        val = service.get(self._pfsense_get_property_name())
-        if val is None or val == STATE_UNKNOWN:
-            return None
-        return bool(val)
+        property = self._pfsense_get_property_name()
+        try:
+            value = service[property]
+            return value
+        except KeyError:
+            return STATE_UNKNOWN
 
     async def async_turn_on(self, **kwargs):
+        """Turn the entity on."""
         service = self._pfsense_get_service()
-        if not service: return
         client = self._get_pfsense_client()
         await self.hass.async_add_executor_job(
             client.start_service, service["name"], service
         )
-        await self.coordinator.async_request_refresh()
+        await self.coordinator.async_refresh()
 
     async def async_turn_off(self, **kwargs):
+        """Turn the entity off."""
         service = self._pfsense_get_service()
-        if not service: return
         client = self._get_pfsense_client()
         await self.hass.async_add_executor_job(
             client.stop_service, service["name"], service
         )
-        await self.coordinator.async_request_refresh()
+        await self.coordinator.async_refresh()

@@ -1,4 +1,4 @@
-"""pfSense integration binary sensors."""
+"""pfSense integration."""
 
 import logging
 
@@ -19,6 +19,7 @@ from .const import COORDINATOR, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
+
 async def async_setup_entry(
     hass: HomeAssistant,
     config_entry: ConfigEntry,
@@ -30,30 +31,37 @@ async def async_setup_entry(
     def process_entities_callback(hass, config_entry):
         data = hass.data[DOMAIN][config_entry.entry_id]
         coordinator = data[COORDINATOR]
-        
-        entities = [
-            PfSenseCarpStatusBinarySensor(
-                config_entry, coordinator,
-                BinarySensorEntityDescription(key="carp.status", name="CARP Status", icon="mdi:server-network"),
-                False,
+        entities = []
+        entity = PfSenseCarpStatusBinarySensor(
+            config_entry,
+            coordinator,
+            BinarySensorEntityDescription(
+                key="carp.status",
+                name="CARP Status",
+                # native_unit_of_measurement=native_unit_of_measurement,
+                icon="mdi:gauge",
+                # state_class=state_class,
+                # entity_category=entity_category,
             ),
-            PfSensePendingNoticesPresentBinarySensor(
-                config_entry, coordinator,
-                BinarySensorEntityDescription(key="notices.pending", name="Pending Notices Present", icon="mdi:alert"),
-                True,
+            False,
+        )
+        entities.append(entity)
+
+        entity = PfSensePendingNoticesPresentBinarySensor(
+            config_entry,
+            coordinator,
+            BinarySensorEntityDescription(
+                key="notices.pending_notices_present",
+                name="Pending Notices Present",
+                # native_unit_of_measurement=native_unit_of_measurement,
+                icon="mdi:alert",
+                # state_class=state_class,
+                # entity_category=entity_category,
             ),
-            # New: smart overload sensors  by TranQuiL aka Malosaaaa
-            PfSenseCpuOverloadBinarySensor(
-                config_entry, coordinator,
-                BinarySensorEntityDescription(key="cpu_overload", name="CPU Overload (>90%)", icon="mdi:cpu-64-bit", device_class=BinarySensorDeviceClass.PROBLEM),
-                True,
-            ),
-            PfSenseMemoryOverloadBinarySensor(
-                config_entry, coordinator,
-                BinarySensorEntityDescription(key="memory_overload", name="Memory Overload (>90%)", icon="mdi:memory", device_class=BinarySensorDeviceClass.PROBLEM),
-                True,
-            ),
-        ]
+            True,
+        )
+        entities.append(entity)
+
         return entities
 
     cem = CoordinatorEntityManager(
@@ -65,36 +73,56 @@ async def async_setup_entry(
     )
     cem.process_entities()
 
+
 class PfSenseBinarySensor(PfSenseEntity, BinarySensorEntity):
     def __init__(
-        self, config_entry, coordinator: DataUpdateCoordinator, entity_description: BinarySensorEntityDescription, enabled_default: bool
+        self,
+        config_entry,
+        coordinator: DataUpdateCoordinator,
+        entity_description: BinarySensorEntityDescription,
+        enabled_default: bool,
     ) -> None:
+        """Initialize the sensor."""
         self.config_entry = config_entry
         self.entity_description = entity_description
         self.coordinator = coordinator
         self._attr_entity_registry_enabled_default = enabled_default
         self._attr_name = f"{self.pfsense_device_name} {entity_description.name}"
-        self._attr_unique_id = slugify(f"{self.pfsense_device_unique_id}_{entity_description.key}")
+        self._attr_unique_id = slugify(
+            f"{self.pfsense_device_unique_id}_{entity_description.key}"
+        )
 
     @property
-    def is_on(self) -> bool | None:
+    def is_on(self):
         return False
+
+    @property
+    def device_class(self):
+        return None
+
+    @property
+    def extra_state_attributes(self):
+        return None
+
 
 class PfSenseCarpStatusBinarySensor(PfSenseBinarySensor):
     @property
-    def is_on(self) -> bool | None:
-        val = dict_get(self.coordinator.data, "carp_status")
-        if val is None or val == STATE_UNKNOWN:
-            return None
-        return bool(val)
+    def is_on(self):
+        state = self.coordinator.data
+        try:
+            return state["carp_status"]
+        except KeyError:
+            return STATE_UNKNOWN
+
 
 class PfSensePendingNoticesPresentBinarySensor(PfSenseBinarySensor):
     @property
-    def is_on(self) -> bool | None:
-        val = dict_get(self.coordinator.data, "notices.pending_notices_present")
-        if val is None or val == STATE_UNKNOWN:
-            return None
-        return bool(val)
+    def is_on(self):
+        state = self.coordinator.data
+        try:
+            return state["notices"]["pending_notices_present"]
+        except KeyError:
+            return STATE_UNKNOWN
 
     @property
     def device_class(self):
@@ -102,20 +130,10 @@ class PfSensePendingNoticesPresentBinarySensor(PfSenseBinarySensor):
 
     @property
     def extra_state_attributes(self):
+        state = self.coordinator.data
         attrs = {}
-        notices = dict_get(self.coordinator.data, "notices.pending_notices")
-        if notices:
-            attrs["pending_notices"] = notices
+
+        notices = dict_get(state, "notices.pending_notices")
+        attrs["pending_notices"] = notices
+
         return attrs
-
-class PfSenseCpuOverloadBinarySensor(PfSenseBinarySensor):
-    @property
-    def is_on(self) -> bool | None:
-        usage = dict_get(self.coordinator.data, "telemetry.cpu.used_percent", 0)
-        return usage > 90
-
-class PfSenseMemoryOverloadBinarySensor(PfSenseBinarySensor):
-    @property
-    def is_on(self) -> bool | None:
-        usage = dict_get(self.coordinator.data, "telemetry.memory.used_percent", 0)
-        return usage > 90
