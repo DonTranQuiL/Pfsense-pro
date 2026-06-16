@@ -20,11 +20,7 @@ repo = os.getenv("GITHUB_REPOSITORY") or os.getenv("REPO", "")
 
 if repo:
     repo_name = repo.split("/")[-1]
-    project_name = (
-        repo_name.replace("-", " ")
-        .replace("_", " ")
-        .title()
-    )
+    project_name = repo_name.replace("-", " ").replace("_", " ").title()
 else:
     project_name = "This Project"
 # Anti-markdown-break trick
@@ -92,10 +88,10 @@ try:
     repo = os.getenv("GITHUB_REPOSITORY") or os.getenv("REPO", "")
     openrouter_url = "https://openrouter.ai/api/v1/chat/completions"
     openrouter_headers = {
-    "Authorization": f"Bearer {api_key}",
-    "Content-Type": "application/json",
-    "HTTP-Referer": f"https://github.com/{repo}" if repo else "https://github.com",
-    "X-Title": f"{project_name} Release Bot",
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json",
+        "HTTP-Referer": f"https://github.com/{repo}" if repo else "https://github.com",
+        "X-Title": f"{project_name} Release Bot",
     }
     openrouter_payload = {
         "model": "gpt-4o-mini",
