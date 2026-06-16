@@ -16,19 +16,22 @@ if not api_key:
     exit(0)
 
 # Detect the project name automatically from the repo path
-repo_env = os.getenv("REPO", "")
-project_name = "SkyRadar Fusion"
-if "grocy" in repo_env.lower():
-    project_name = "Grocy"
-elif repo_env:
-    # E.g. "ADSB-For-Home-assistant" -> "ADSB For Home Assistant"
-    project_name = repo_env.split("/")[-1].replace("-", " ").replace("_", " ").title()
+repo = os.getenv("GITHUB_REPOSITORY") or os.getenv("REPO", "")
 
+if repo:
+    repo_name = repo.split("/")[-1]
+    project_name = (
+        repo_name.replace("-", " ")
+        .replace("_", " ")
+        .title()
+    )
+else:
+    project_name = "This Project"
 # Anti-markdown-break trick
 BACKTICKS = "`" * 3
 
 prompt = f"""
-You are the AI Release Manager for 'PFsense Pro'. Your persona is Snoop Dogg.
+You are the AI Release Manager for '{project_name}'. Your persona is Snoop Dogg.
 We are dropping a brand new release, and your job is to write the official GitHub Release Notes based on the commit history.
 
 Here are the commit titles and extended descriptions since the last release:
@@ -86,12 +89,13 @@ def send_request_with_retry(method, url, headers, json_data, timeout, max_retrie
 
 try:
     # Direct requests call bypasses any OpenAI library proxy/connection pool bugs
+    repo = os.getenv("GITHUB_REPOSITORY") or os.getenv("REPO", "")
     openrouter_url = "https://openrouter.ai/api/v1/chat/completions"
     openrouter_headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json",
-        "HTTP-Referer": "https://github.com/DonTranQuiL/pfsense-pro",
-        "X-Title": "Pfsense pro bot",
+    "Authorization": f"Bearer {api_key}",
+    "Content-Type": "application/json",
+    "HTTP-Referer": f"https://github.com/{repo}" if repo else "https://github.com",
+    "X-Title": f"{project_name} Release Bot",
     }
     openrouter_payload = {
         "model": "gpt-4o-mini",
