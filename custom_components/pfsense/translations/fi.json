@@ -1,0 +1,95 @@
+{
+  "config": {
+    "abort": {
+      "already_configured": "Laite on jo määritetty"
+    },
+    "error": {
+      "cannot_connect": "Yhdistäminen epäonnistui",
+      "invalid_auth": "Virheellinen todennus",
+      "unknown": "Odottamaton virhe",
+      "invalid_url_format": "Virheellinen URL-muoto",
+      "privilege_missing": "Käyttäjällä ei ole riittäviä oikeuksia",
+      "connect_timeout": "Yhteys aikakatkaistiin",
+      "cannot_connect_ssl": "SSL-virhe",
+      "url_redirect": "Väärä URL (uudelleenohjaus)"
+    },
+    "step": {
+      "user": {
+        "data": {
+          "url": "URL",
+          "username": "Käyttäjätunnus",
+          "name": "Palomuurin nimi",
+          "password": "Salasana",
+          "verify_ssl": "Vahvista SSL-varmenne"
+        },
+        "title": "Yhdistä pfSense-palomuuriin"
+      }
+    }
+  },
+  "options": {
+    "error": {
+      "cannot_connect": "Yhdistäminen epäonnistui",
+      "unknown": "Odottamaton virhe"
+    },
+    "step": {
+      "init": {
+        "data": {
+          "scan_interval": "Skannausväli (sekuntia)",
+          "device_tracker_enabled": "Ota laiteseuranta käyttöön",
+          "device_tracker_scan_interval": "Seurannan väli (sekuntia)",
+          "device_tracker_consider_home": "Seurannan kotoaika (sekuntia)"
+        },
+        "description": "Määritä asetukset."
+      },
+      "device_tracker": {
+        "description": "Valitse seurattavat laitteet.",
+        "data": {
+          "devices": "Seurattavat laitteet"
+        }
+      }
+    }
+  },
+  "services": {
+    "update_alias": {
+      "name": "Päivitä palomuurin alias",
+      "description": "Lisää/poista IP/isäntä dynaamisesti aliaksesta.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity ID",
+          "description": "pfSense tracking entity id."
+        },
+        "alias_name": {
+          "name": "Aliaksen nimi",
+          "description": "Name of the pfSense alias."
+        },
+        "address": {
+          "name": "Address",
+          "description": "Kohde-IP-osoite"
+        },
+        "action": {
+          "name": "Action",
+          "description": "Add / Remove"
+        },
+        "kill_states": {
+          "name": "Kill States",
+          "description": "Instantly terminate target connections."
+        }
+      }
+    },
+    "toggle_dnsbl": {
+      "name": "Kytke pfBlockerNG DNSBL",
+      "description": "Ota DNSBL-mainosten esto käyttöön/pois käytöstä.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity ID",
+          "description": "pfSense tracking entity id."
+        },
+        "action": {
+          "name": "Action",
+          "description": "Enable / Disable"
+        }
+      }
+    }
+  },
+  "title": "pfSense"
+}

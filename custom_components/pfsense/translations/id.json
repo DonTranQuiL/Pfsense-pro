@@ -1,0 +1,95 @@
+{
+  "config": {
+    "abort": {
+      "already_configured": "Perangkat sudah dikonfigurasi"
+    },
+    "error": {
+      "cannot_connect": "Gagal terhubung",
+      "invalid_auth": "Otentikasi tidak valid",
+      "unknown": "Kesalahan tak terduga",
+      "invalid_url_format": "Format URL tidak valid",
+      "privilege_missing": "Pengguna tidak memiliki hak istimewa yang cukup",
+      "connect_timeout": "Batas waktu koneksi",
+      "cannot_connect_ssl": "Kegagalan SSL",
+      "url_redirect": "URL salah (pengalihan)"
+    },
+    "step": {
+      "user": {
+        "data": {
+          "url": "URL",
+          "username": "Nama Pengguna",
+          "name": "Nama Firewall",
+          "password": "Kata Sandi",
+          "verify_ssl": "Verifikasi sertifikat SSL"
+        },
+        "title": "Hubungkan ke router/firewall pfSense"
+      }
+    }
+  },
+  "options": {
+    "error": {
+      "cannot_connect": "Gagal terhubung",
+      "unknown": "Kesalahan tak terduga"
+    },
+    "step": {
+      "init": {
+        "data": {
+          "scan_interval": "Interval Pemindaian (detik)",
+          "device_tracker_enabled": "Aktifkan Pelacak Perangkat",
+          "device_tracker_scan_interval": "Interval Pemindaian Pelacak (detik)",
+          "device_tracker_consider_home": "Waktu Pertimbangan Rumah (detik)"
+        },
+        "description": "Konfigurasikan Opsi."
+      },
+      "device_tracker": {
+        "description": "Pilih perangkat yang ingin Anda lacak.",
+        "data": {
+          "devices": "Perangkat untuk Dilacak"
+        }
+      }
+    }
+  },
+  "services": {
+    "update_alias": {
+      "name": "Perbarui Alias Firewall",
+      "description": "Tambahkan/hapus IP/Host secara dinamis dari alias.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity ID",
+          "description": "pfSense tracking entity id."
+        },
+        "alias_name": {
+          "name": "Nama Alias",
+          "description": "Name of the pfSense alias."
+        },
+        "address": {
+          "name": "Address",
+          "description": "Alamat IP Target"
+        },
+        "action": {
+          "name": "Action",
+          "description": "Add / Remove"
+        },
+        "kill_states": {
+          "name": "Kill States",
+          "description": "Instantly terminate target connections."
+        }
+      }
+    },
+    "toggle_dnsbl": {
+      "name": "Alihkan pfBlockerNG DNSBL",
+      "description": "Aktifkan atau nonaktifkan pemblokiran iklan DNSBL secara instan.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity ID",
+          "description": "pfSense tracking entity id."
+        },
+        "action": {
+          "name": "Action",
+          "description": "Enable / Disable"
+        }
+      }
+    }
+  },
+  "title": "pfSense"
+}

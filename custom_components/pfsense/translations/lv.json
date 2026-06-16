@@ -1,0 +1,95 @@
+{
+  "config": {
+    "abort": {
+      "already_configured": "Ierīce jau ir konfigurēta"
+    },
+    "error": {
+      "cannot_connect": "Neizdevās izveidot savienojumu",
+      "invalid_auth": "Nederīga autentifikācija",
+      "unknown": "Negaidīta kļūda",
+      "invalid_url_format": "Nederīgs URL formāts",
+      "privilege_missing": "Lietotājam nav pietiekamu privilēģiju",
+      "connect_timeout": "Savienojuma taimauts",
+      "cannot_connect_ssl": "SSL kļūda",
+      "url_redirect": "Nepareizs URL (novirzīšana)"
+    },
+    "step": {
+      "user": {
+        "data": {
+          "url": "URL",
+          "username": "Lietotājvārds",
+          "name": "Ugunsmūra nosaukums",
+          "password": "Parole",
+          "verify_ssl": "Pārbaudīt SSL sertifikātu"
+        },
+        "title": "Pievienoties pfSense ugunsmūrim"
+      }
+    }
+  },
+  "options": {
+    "error": {
+      "cannot_connect": "Neizdevās izveidot savienojumu",
+      "unknown": "Negaidīta kļūda"
+    },
+    "step": {
+      "init": {
+        "data": {
+          "scan_interval": "Skenēšanas intervāls (sekundes)",
+          "device_tracker_enabled": "Iespējot ierīces izsekošanu",
+          "device_tracker_scan_interval": "Izsekošanas intervāls (sekundes)",
+          "device_tracker_consider_home": "Mājās laiks (sekundes)"
+        },
+        "description": "Konfigurēt opcijas."
+      },
+      "device_tracker": {
+        "description": "Izvēlieties ierīces izsekošanai.",
+        "data": {
+          "devices": "Izsekojamās ierīces"
+        }
+      }
+    }
+  },
+  "services": {
+    "update_alias": {
+      "name": "Atjaunināt ugunsmūra aizstājvārdu",
+      "description": "Dinamiski pievienot/noņemt IP no aizstājvārda.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity ID",
+          "description": "pfSense tracking entity id."
+        },
+        "alias_name": {
+          "name": "Aizstājvārda nosaukums",
+          "description": "Name of the pfSense alias."
+        },
+        "address": {
+          "name": "Address",
+          "description": "Mērķa IP adrese"
+        },
+        "action": {
+          "name": "Action",
+          "description": "Add / Remove"
+        },
+        "kill_states": {
+          "name": "Kill States",
+          "description": "Instantly terminate target connections."
+        }
+      }
+    },
+    "toggle_dnsbl": {
+      "name": "Pārslēgt pfBlockerNG DNSBL",
+      "description": "Nekavējoties iespējot/atspējot DNSBL bloķēšanu.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity ID",
+          "description": "pfSense tracking entity id."
+        },
+        "action": {
+          "name": "Action",
+          "description": "Enable / Disable"
+        }
+      }
+    }
+  },
+  "title": "pfSense"
+}

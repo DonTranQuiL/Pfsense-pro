@@ -1,0 +1,95 @@
+{
+  "config": {
+    "abort": {
+      "already_configured": "تم تكوين الجهاز بالفعل"
+    },
+    "error": {
+      "cannot_connect": "فشل في الاتصال",
+      "invalid_auth": "مصادقة غير صالحة",
+      "unknown": "خطأ غير متوقع",
+      "invalid_url_format": "تنسيق رابط غير صالح",
+      "privilege_missing": "المستخدم ليس لديه امتيازات كافية",
+      "connect_timeout": "انتهت مهلة الاتصال",
+      "cannot_connect_ssl": "فشل SSL",
+      "url_redirect": "رابط غير صحيح (إعادة توجيه)"
+    },
+    "step": {
+      "user": {
+        "data": {
+          "url": "الرابط",
+          "username": "اسم المستخدم",
+          "name": "اسم جدار الحماية",
+          "password": "كلمة المرور",
+          "verify_ssl": "تحقق من شهادة SSL"
+        },
+        "title": "الاتصال بجدار الحماية pfSense"
+      }
+    }
+  },
+  "options": {
+    "error": {
+      "cannot_connect": "فشل في الاتصال",
+      "unknown": "خطأ غير متوقع"
+    },
+    "step": {
+      "init": {
+        "data": {
+          "scan_interval": "الفاصل الزمني للمسح (بالثواني)",
+          "device_tracker_enabled": "تمكين تتبع الجهاز",
+          "device_tracker_scan_interval": "الفاصل الزمني لتتبع الجهاز (بالثواني)",
+          "device_tracker_consider_home": "وقت التتبع في المنزل (بالثواني)"
+        },
+        "description": "تكوين الخيارات."
+      },
+      "device_tracker": {
+        "description": "اختر الأجهزة التي تريد تتبعها.",
+        "data": {
+          "devices": "الأجهزة المراد تتبعها"
+        }
+      }
+    }
+  },
+  "services": {
+    "update_alias": {
+      "name": "تحديث اسم جدار الحماية المستعار",
+      "description": "إضافة أو إزالة IP ديناميكيًا من مجموعة الاسم المستعار.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity ID",
+          "description": "pfSense tracking entity id."
+        },
+        "alias_name": {
+          "name": "الاسم المستعار",
+          "description": "Name of the pfSense alias."
+        },
+        "address": {
+          "name": "Address",
+          "description": "عنوان IP الهدف"
+        },
+        "action": {
+          "name": "Action",
+          "description": "Add / Remove"
+        },
+        "kill_states": {
+          "name": "Kill States",
+          "description": "Instantly terminate target connections."
+        }
+      }
+    },
+    "toggle_dnsbl": {
+      "name": "تبديل pfBlockerNG DNSBL",
+      "description": "تمكين أو تعطيل حظر إعلانات DNSBL على الفور.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity ID",
+          "description": "pfSense tracking entity id."
+        },
+        "action": {
+          "name": "Action",
+          "description": "Enable / Disable"
+        }
+      }
+    }
+  },
+  "title": "pfSense"
+}

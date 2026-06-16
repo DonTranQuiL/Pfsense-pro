@@ -1,0 +1,95 @@
+{
+  "config": {
+    "abort": {
+      "already_configured": "Dispozitivul este deja configurat"
+    },
+    "error": {
+      "cannot_connect": "Conectarea a eșuat",
+      "invalid_auth": "Autentificare invalidă",
+      "unknown": "Eroare neașteptată",
+      "invalid_url_format": "Format URL invalid",
+      "privilege_missing": "Privilegii insuficiente",
+      "connect_timeout": "Timp de conectare expirat",
+      "cannot_connect_ssl": "Eroare SSL",
+      "url_redirect": "URL incorect (redirecționare)"
+    },
+    "step": {
+      "user": {
+        "data": {
+          "url": "URL",
+          "username": "Nume utilizator",
+          "name": "Nume Firewall",
+          "password": "Parolă",
+          "verify_ssl": "Verificați certificatul SSL"
+        },
+        "title": "Conectați-vă la routerul pfSense"
+      }
+    }
+  },
+  "options": {
+    "error": {
+      "cannot_connect": "Conectarea a eșuat",
+      "unknown": "Eroare neașteptată"
+    },
+    "step": {
+      "init": {
+        "data": {
+          "scan_interval": "Interval de scanare (secunde)",
+          "device_tracker_enabled": "Activați urmărirea dispozitivelor",
+          "device_tracker_scan_interval": "Interval urmărire (secunde)",
+          "device_tracker_consider_home": "Timp acasă (secunde)"
+        },
+        "description": "Configurați opțiunile."
+      },
+      "device_tracker": {
+        "description": "Alegeți ce dispozitive doriți să urmăriți.",
+        "data": {
+          "devices": "Dispozitive de urmărit"
+        }
+      }
+    }
+  },
+  "services": {
+    "update_alias": {
+      "name": "Actualizare Alias Firewall",
+      "description": "Adăugați/eliminați dinamic un IP dintr-un alias.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity ID",
+          "description": "pfSense tracking entity id."
+        },
+        "alias_name": {
+          "name": "Nume Alias",
+          "description": "Name of the pfSense alias."
+        },
+        "address": {
+          "name": "Address",
+          "description": "Adresa IP vizată"
+        },
+        "action": {
+          "name": "Action",
+          "description": "Add / Remove"
+        },
+        "kill_states": {
+          "name": "Kill States",
+          "description": "Instantly terminate target connections."
+        }
+      }
+    },
+    "toggle_dnsbl": {
+      "name": "Comutare pfBlockerNG DNSBL",
+      "description": "Activați/dezactivați instantaneu blocarea reclamelor DNSBL.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity ID",
+          "description": "pfSense tracking entity id."
+        },
+        "action": {
+          "name": "Action",
+          "description": "Enable / Disable"
+        }
+      }
+    }
+  },
+  "title": "pfSense"
+}

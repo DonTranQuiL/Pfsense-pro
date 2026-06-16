@@ -1,0 +1,95 @@
+{
+  "config": {
+    "abort": {
+      "already_configured": "デバイスは既に構成されています"
+    },
+    "error": {
+      "cannot_connect": "接続に失敗しました",
+      "invalid_auth": "無効な認証",
+      "unknown": "予期しないエラー",
+      "invalid_url_format": "無効なURL形式",
+      "privilege_missing": "ユーザーに十分な権限がありません",
+      "connect_timeout": "接続タイムアウト",
+      "cannot_connect_ssl": "SSLエラー",
+      "url_redirect": "不正なURL（リダイレクト）"
+    },
+    "step": {
+      "user": {
+        "data": {
+          "url": "URL",
+          "username": "ユーザー名",
+          "name": "ファイアウォール名",
+          "password": "パスワード",
+          "verify_ssl": "SSL証明書を検証"
+        },
+        "title": "pfSenseファイアウォールに接続"
+      }
+    }
+  },
+  "options": {
+    "error": {
+      "cannot_connect": "接続に失敗しました",
+      "unknown": "予期しないエラー"
+    },
+    "step": {
+      "init": {
+        "data": {
+          "scan_interval": "スキャン間隔（秒）",
+          "device_tracker_enabled": "デバイストラッカーを有効にする",
+          "device_tracker_scan_interval": "トラッカースキャン間隔（秒）",
+          "device_tracker_consider_home": "自宅滞在時間（秒）"
+        },
+        "description": "オプションを構成する。"
+      },
+      "device_tracker": {
+        "description": "追跡するデバイスを選択します。",
+        "data": {
+          "devices": "追跡するデバイス"
+        }
+      }
+    }
+  },
+  "services": {
+    "update_alias": {
+      "name": "ファイアウォールエイリアスの更新",
+      "description": "エイリアスからIP/ホストを動的に追加・削除します。",
+      "fields": {
+        "entity_id": {
+          "name": "Entity ID",
+          "description": "pfSense tracking entity id."
+        },
+        "alias_name": {
+          "name": "エイリアス名",
+          "description": "Name of the pfSense alias."
+        },
+        "address": {
+          "name": "Address",
+          "description": "ターゲットIPアドレス"
+        },
+        "action": {
+          "name": "Action",
+          "description": "Add / Remove"
+        },
+        "kill_states": {
+          "name": "Kill States",
+          "description": "Instantly terminate target connections."
+        }
+      }
+    },
+    "toggle_dnsbl": {
+      "name": "pfBlockerNG DNSBLの切り替え",
+      "description": "DNSBL広告ブロックを即座に有効・無効にします。",
+      "fields": {
+        "entity_id": {
+          "name": "Entity ID",
+          "description": "pfSense tracking entity id."
+        },
+        "action": {
+          "name": "Action",
+          "description": "Enable / Disable"
+        }
+      }
+    }
+  },
+  "title": "pfSense"
+}

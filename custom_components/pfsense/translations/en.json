@@ -10,7 +10,7 @@
       "invalid_url_format": "Invalid URL Format",
       "privilege_missing": "User has insufficient privileges (System - HA node sync)",
       "connect_timeout": "Connection timeout",
-      "cannot_connect_ssl": "SSL Failure (Self-signed certificate?)",
+      "cannot_connect_ssl": "SSL Failure",
       "url_redirect": "Incorrect URL (redirect)"
     },
     "step": {
@@ -39,12 +39,54 @@
           "device_tracker_scan_interval": "Device Tracker Scan Interval (seconds)",
           "device_tracker_consider_home": "Device Tracker Consider Home (seconds)"
         },
-        "description": "Configure the global polling intervals and device tracking settings for your pfSense firewall."
+        "description": "Configure Options."
       },
       "device_tracker": {
-        "description": "Choose which network devices you want to track as device trackers in Home Assistant.",
+        "description": "Choose which devices you want to track.",
         "data": {
           "devices": "Devices to Track"
+        }
+      }
+    }
+  },
+  "services": {
+    "update_alias": {
+      "name": "Update Firewall Alias",
+      "description": "Dynamically add or remove an IP/Host from a pfSense alias group.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity ID",
+          "description": "pfSense tracking entity id."
+        },
+        "alias_name": {
+          "name": "Alias Name",
+          "description": "Name of the pfSense alias."
+        },
+        "address": {
+          "name": "Address",
+          "description": "Target IP Address"
+        },
+        "action": {
+          "name": "Action",
+          "description": "Add / Remove"
+        },
+        "kill_states": {
+          "name": "Kill States",
+          "description": "Instantly terminate target connections."
+        }
+      }
+    },
+    "toggle_dnsbl": {
+      "name": "Toggle pfBlockerNG DNSBL",
+      "description": "Instantly enable or disable DNSBL ad-blocking.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity ID",
+          "description": "pfSense tracking entity id."
+        },
+        "action": {
+          "name": "Action",
+          "description": "Enable / Disable"
         }
       }
     }

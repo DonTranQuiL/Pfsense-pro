@@ -8,9 +8,9 @@
       "invalid_auth": "Неверная аутентификация",
       "unknown": "Непредвиденная ошибка",
       "invalid_url_format": "Неверный формат URL",
-      "privilege_missing": "У пользователя недостаточно прав (System - HA node sync)",
+      "privilege_missing": "Недостаточно прав",
       "connect_timeout": "Тайм-аут подключения",
-      "cannot_connect_ssl": "Ошибка SSL (Самоподписанный сертификат?)",
+      "cannot_connect_ssl": "Ошибка SSL",
       "url_redirect": "Неверный URL (перенаправление)"
     },
     "step": {
@@ -18,11 +18,11 @@
         "data": {
           "url": "URL",
           "username": "Имя пользователя",
-          "name": "Имя межсетевого экрана",
+          "name": "Имя брандмауэра",
           "password": "Пароль",
-          "verify_ssl": "Проверять SSL-сертификат"
+          "verify_ssl": "Проверить SSL-сертификат"
         },
-        "title": "Подключение к межсетевому экрану / маршрутизатору pfSense"
+        "title": "Подключиться к маршрутизатору pfSense"
       }
     }
   },
@@ -34,17 +34,59 @@
     "step": {
       "init": {
         "data": {
-          "scan_interval": "Интервал опроса (секунды)",
+          "scan_interval": "Интервал сканирования (сек)",
           "device_tracker_enabled": "Включить отслеживание устройств",
-          "device_tracker_scan_interval": "Интервал опроса трекера устройств (секунды)",
-          "device_tracker_consider_home": "Время удержания статуса 'Дома' (секунды)"
+          "device_tracker_scan_interval": "Интервал отслеживания (сек)",
+          "device_tracker_consider_home": "Время нахождения дома (сек)"
         },
-        "description": "Настройте глобальные интервалы опроса и параметры отслеживания устройств для вашего межсетевого экрана pfSense."
+        "description": "Настроить параметры."
       },
       "device_tracker": {
-        "description": "Выберите сетевые устройства, которые вы хотите отслеживать как трекеры устройств в Home Assistant.",
+        "description": "Выберите устройства для отслеживания.",
         "data": {
-          "devices": "Отслеживаемые устройства"
+          "devices": "Устройства для отслеживания"
+        }
+      }
+    }
+  },
+  "services": {
+    "update_alias": {
+      "name": "Обновить псевдоним",
+      "description": "Динамическое добавление/удаление IP-адреса из псевдонима.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity ID",
+          "description": "pfSense tracking entity id."
+        },
+        "alias_name": {
+          "name": "Имя псевдонима",
+          "description": "Name of the pfSense alias."
+        },
+        "address": {
+          "name": "Address",
+          "description": "Целевой IP-адрес"
+        },
+        "action": {
+          "name": "Action",
+          "description": "Add / Remove"
+        },
+        "kill_states": {
+          "name": "Kill States",
+          "description": "Instantly terminate target connections."
+        }
+      }
+    },
+    "toggle_dnsbl": {
+      "name": "Переключить pfBlockerNG DNSBL",
+      "description": "Мгновенное включение/отключение блокировки DNSBL.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity ID",
+          "description": "pfSense tracking entity id."
+        },
+        "action": {
+          "name": "Action",
+          "description": "Enable / Disable"
         }
       }
     }

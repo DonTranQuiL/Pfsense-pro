@@ -1,0 +1,95 @@
+{
+  "config": {
+    "abort": {
+      "already_configured": "Az eszköz már konfigurálva van"
+    },
+    "error": {
+      "cannot_connect": "A csatlakozás sikertelen",
+      "invalid_auth": "Érvénytelen hitelesítés",
+      "unknown": "Váratlan hiba",
+      "invalid_url_format": "Érvénytelen URL formátum",
+      "privilege_missing": "A felhasználónak nincs jogosultsága",
+      "connect_timeout": "Csatlakozási időtúllépés",
+      "cannot_connect_ssl": "SSL hiba",
+      "url_redirect": "Helytelen URL (átirányítás)"
+    },
+    "step": {
+      "user": {
+        "data": {
+          "url": "URL",
+          "username": "Felhasználónév",
+          "name": "Tűzfal neve",
+          "password": "Jelszó",
+          "verify_ssl": "SSL tanúsítvány ellenőrzése"
+        },
+        "title": "Csatlakozás a pfSense routerhez"
+      }
+    }
+  },
+  "options": {
+    "error": {
+      "cannot_connect": "A csatlakozás sikertelen",
+      "unknown": "Váratlan hiba"
+    },
+    "step": {
+      "init": {
+        "data": {
+          "scan_interval": "Szkennelési időköz (másodperc)",
+          "device_tracker_enabled": "Eszközkövető engedélyezése",
+          "device_tracker_scan_interval": "Követő szkennelési időköze (mp)",
+          "device_tracker_consider_home": "Otthonléti idő (mp)"
+        },
+        "description": "Opciók konfigurálása."
+      },
+      "device_tracker": {
+        "description": "Válassza ki a követendő eszközöket.",
+        "data": {
+          "devices": "Követendő eszközök"
+        }
+      }
+    }
+  },
+  "services": {
+    "update_alias": {
+      "name": "Tűzfal alias frissítése",
+      "description": "IP dinamikus hozzáadása/eltávolítása aliasból.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity ID",
+          "description": "pfSense tracking entity id."
+        },
+        "alias_name": {
+          "name": "Alias neve",
+          "description": "Name of the pfSense alias."
+        },
+        "address": {
+          "name": "Address",
+          "description": "Cél IP-cím"
+        },
+        "action": {
+          "name": "Action",
+          "description": "Add / Remove"
+        },
+        "kill_states": {
+          "name": "Kill States",
+          "description": "Instantly terminate target connections."
+        }
+      }
+    },
+    "toggle_dnsbl": {
+      "name": "pfBlockerNG DNSBL kapcsoló",
+      "description": "DNSBL hirdetésblokkolás be/kikapcsolása.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity ID",
+          "description": "pfSense tracking entity id."
+        },
+        "action": {
+          "name": "Action",
+          "description": "Enable / Disable"
+        }
+      }
+    }
+  },
+  "title": "pfSense"
+}

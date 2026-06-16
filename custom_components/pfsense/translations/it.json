@@ -1,16 +1,16 @@
 {
   "config": {
     "abort": {
-      "already_configured": "Il dispositivo è già configurato"
+      "already_configured": "Dispositivo già configurato"
     },
     "error": {
       "cannot_connect": "Connessione fallita",
       "invalid_auth": "Autenticazione non valida",
       "unknown": "Errore imprevisto",
       "invalid_url_format": "Formato URL non valido",
-      "privilege_missing": "L'utente non ha privilegi sufficienti (System - HA node sync)",
-      "connect_timeout": "Tempo scaduto per la connessione",
-      "cannot_connect_ssl": "Errore SSL (Certificato autofirmato?)",
+      "privilege_missing": "Privilegi insufficienti",
+      "connect_timeout": "Timeout di connessione",
+      "cannot_connect_ssl": "Errore SSL",
       "url_redirect": "URL errato (reindirizzamento)"
     },
     "step": {
@@ -18,11 +18,11 @@
         "data": {
           "url": "URL",
           "username": "Nome utente",
-          "name": "Nome del Firewall",
+          "name": "Nome Firewall",
           "password": "Password",
           "verify_ssl": "Verifica certificato SSL"
         },
-        "title": "Connettiti al firewall / router pfSense"
+        "title": "Connetti al firewall/router pfSense"
       }
     }
   },
@@ -35,16 +35,58 @@
       "init": {
         "data": {
           "scan_interval": "Intervallo di scansione (secondi)",
-          "device_tracker_enabled": "Abilita il tracciamento dei dispositivi",
-          "device_tracker_scan_interval": "Intervallo di scansione del tracciatore (secondi)",
-          "device_tracker_consider_home": "Tempo per considerare in casa (secondi)"
+          "device_tracker_enabled": "Abilita tracciamento",
+          "device_tracker_scan_interval": "Intervallo scansione dispositivi (secondi)",
+          "device_tracker_consider_home": "Tempo a casa (secondi)"
         },
-        "description": "Configura gli intervalli di polling globali e le impostazioni di tracciamento dei dispositivi per il tuo firewall pfSense."
+        "description": "Configura Opzioni."
       },
       "device_tracker": {
-        "description": "Scegli quali dispositivi di rete desideri tracciare come tracciatore di dispositivi in Home Assistant.",
+        "description": "Scegli quali dispositivi tracciare.",
         "data": {
           "devices": "Dispositivi da tracciare"
+        }
+      }
+    }
+  },
+  "services": {
+    "update_alias": {
+      "name": "Aggiorna Alias Firewall",
+      "description": "Aggiungi o rimuovi un IP/Host da un alias pfSense.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity ID",
+          "description": "pfSense tracking entity id."
+        },
+        "alias_name": {
+          "name": "Nome Alias",
+          "description": "Name of the pfSense alias."
+        },
+        "address": {
+          "name": "Address",
+          "description": "Indirizzo IP target"
+        },
+        "action": {
+          "name": "Action",
+          "description": "Add / Remove"
+        },
+        "kill_states": {
+          "name": "Kill States",
+          "description": "Instantly terminate target connections."
+        }
+      }
+    },
+    "toggle_dnsbl": {
+      "name": "Attiva/Disattiva pfBlockerNG DNSBL",
+      "description": "Abilita o disabilita il blocco annunci DNSBL.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity ID",
+          "description": "pfSense tracking entity id."
+        },
+        "action": {
+          "name": "Action",
+          "description": "Enable / Disable"
         }
       }
     }

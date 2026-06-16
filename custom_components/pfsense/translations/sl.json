@@ -1,0 +1,95 @@
+{
+  "config": {
+    "abort": {
+      "already_configured": "Naprava je že konfigurirana"
+    },
+    "error": {
+      "cannot_connect": "Povezava ni uspela",
+      "invalid_auth": "Neveljavna avtentikacija",
+      "unknown": "Nepričakovana napaka",
+      "invalid_url_format": "Neveljaven format URL",
+      "privilege_missing": "Uporabnik nima zadostnih pravic",
+      "connect_timeout": "Časovna omejitev povezave",
+      "cannot_connect_ssl": "Napaka SSL",
+      "url_redirect": "Napačen URL (preusmeritev)"
+    },
+    "step": {
+      "user": {
+        "data": {
+          "url": "URL",
+          "username": "Uporabniško ime",
+          "name": "Ime požarnega zidu",
+          "password": "Geslo",
+          "verify_ssl": "Preveri SSL certifikat"
+        },
+        "title": "Poveži se s pfSense usmerjevalnikom"
+      }
+    }
+  },
+  "options": {
+    "error": {
+      "cannot_connect": "Povezava ni uspela",
+      "unknown": "Nepričakovana napaka"
+    },
+    "step": {
+      "init": {
+        "data": {
+          "scan_interval": "Interval skeniranja (sekunde)",
+          "device_tracker_enabled": "Omogoči sledenje naprav",
+          "device_tracker_scan_interval": "Interval sledenja (sekunde)",
+          "device_tracker_consider_home": "Čas doma (sekunde)"
+        },
+        "description": "Konfiguriraj možnosti."
+      },
+      "device_tracker": {
+        "description": "Izberite naprave za sledenje.",
+        "data": {
+          "devices": "Naprave za sledenje"
+        }
+      }
+    }
+  },
+  "services": {
+    "update_alias": {
+      "name": "Posodobi vzdevek",
+      "description": "Dinamično dodaj/odstrani IP iz vzdevka.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity ID",
+          "description": "pfSense tracking entity id."
+        },
+        "alias_name": {
+          "name": "Ime vzdevka",
+          "description": "Name of the pfSense alias."
+        },
+        "address": {
+          "name": "Address",
+          "description": "Ciljni IP naslov"
+        },
+        "action": {
+          "name": "Action",
+          "description": "Add / Remove"
+        },
+        "kill_states": {
+          "name": "Kill States",
+          "description": "Instantly terminate target connections."
+        }
+      }
+    },
+    "toggle_dnsbl": {
+      "name": "Preklopi pfBlockerNG DNSBL",
+      "description": "Takoj omogoči/onemogoči blokiranje DNSBL.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity ID",
+          "description": "pfSense tracking entity id."
+        },
+        "action": {
+          "name": "Action",
+          "description": "Enable / Disable"
+        }
+      }
+    }
+  },
+  "title": "pfSense"
+}

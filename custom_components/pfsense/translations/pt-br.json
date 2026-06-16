@@ -1,0 +1,95 @@
+{
+  "config": {
+    "abort": {
+      "already_configured": "O dispositivo já está configurado"
+    },
+    "error": {
+      "cannot_connect": "Falha na conexão",
+      "invalid_auth": "Autenticação inválida",
+      "unknown": "Erro inesperado",
+      "invalid_url_format": "Formato de URL inválido",
+      "privilege_missing": "Privilégios insuficientes",
+      "connect_timeout": "Tempo esgotado da conexão",
+      "cannot_connect_ssl": "Falha de SSL",
+      "url_redirect": "URL incorreta (redirecionamento)"
+    },
+    "step": {
+      "user": {
+        "data": {
+          "url": "URL",
+          "username": "Usuário",
+          "name": "Nome do Firewall",
+          "password": "Senha",
+          "verify_ssl": "Verificar certificado SSL"
+        },
+        "title": "Conectar ao firewall/roteador pfSense"
+      }
+    }
+  },
+  "options": {
+    "error": {
+      "cannot_connect": "Falha na conexão",
+      "unknown": "Erro inesperado"
+    },
+    "step": {
+      "init": {
+        "data": {
+          "scan_interval": "Intervalo de varredura (segundos)",
+          "device_tracker_enabled": "Ativar rastreador de dispositivos",
+          "device_tracker_scan_interval": "Intervalo do rastreador (segundos)",
+          "device_tracker_consider_home": "Considerar em casa (segundos)"
+        },
+        "description": "Configurar Opções."
+      },
+      "device_tracker": {
+        "description": "Escolha quais dispositivos rastrear.",
+        "data": {
+          "devices": "Dispositivos a rastrear"
+        }
+      }
+    }
+  },
+  "services": {
+    "update_alias": {
+      "name": "Atualizar Alias do Firewall",
+      "description": "Adicione/remova dinamicamente um IP de um alias.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity ID",
+          "description": "pfSense tracking entity id."
+        },
+        "alias_name": {
+          "name": "Nome do Alias",
+          "description": "Name of the pfSense alias."
+        },
+        "address": {
+          "name": "Address",
+          "description": "Endereço IP de destino"
+        },
+        "action": {
+          "name": "Action",
+          "description": "Add / Remove"
+        },
+        "kill_states": {
+          "name": "Kill States",
+          "description": "Instantly terminate target connections."
+        }
+      }
+    },
+    "toggle_dnsbl": {
+      "name": "Alternar pfBlockerNG DNSBL",
+      "description": "Ative/desative instantaneamente o bloqueio DNSBL.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity ID",
+          "description": "pfSense tracking entity id."
+        },
+        "action": {
+          "name": "Action",
+          "description": "Enable / Disable"
+        }
+      }
+    }
+  },
+  "title": "pfSense"
+}

@@ -1,0 +1,95 @@
+{
+  "config": {
+    "abort": {
+      "already_configured": "Cihaz zaten yapılandırılmış"
+    },
+    "error": {
+      "cannot_connect": "Bağlantı başarısız",
+      "invalid_auth": "Geçersiz kimlik doğrulama",
+      "unknown": "Beklenmeyen hata",
+      "invalid_url_format": "Geçersiz URL Biçimi",
+      "privilege_missing": "Kullanıcının yetkisi yetersiz",
+      "connect_timeout": "Bağlantı zaman aşımı",
+      "cannot_connect_ssl": "SSL Hatası",
+      "url_redirect": "Yanlış URL (yönlendirme)"
+    },
+    "step": {
+      "user": {
+        "data": {
+          "url": "URL",
+          "username": "Kullanıcı Adı",
+          "name": "Güvenlik Duvarı Adı",
+          "password": "Şifre",
+          "verify_ssl": "SSL sertifikasını doğrula"
+        },
+        "title": "pfSense güvenlik duvarına bağlan"
+      }
+    }
+  },
+  "options": {
+    "error": {
+      "cannot_connect": "Bağlantı başarısız",
+      "unknown": "Beklenmeyen hata"
+    },
+    "step": {
+      "init": {
+        "data": {
+          "scan_interval": "Tarama Aralığı (saniye)",
+          "device_tracker_enabled": "Cihaz İzleyiciyi Etkinleştir",
+          "device_tracker_scan_interval": "İzleyici Tarama Aralığı (saniye)",
+          "device_tracker_consider_home": "Evde Kalma Süresi (saniye)"
+        },
+        "description": "Seçenekleri Yapılandır."
+      },
+      "device_tracker": {
+        "description": "Hangi cihazları izlemek istediğinizi seçin.",
+        "data": {
+          "devices": "İzlenecek Cihazlar"
+        }
+      }
+    }
+  },
+  "services": {
+    "update_alias": {
+      "name": "Güvenlik Duvarı Takma Adını Güncelle",
+      "description": "Bir takma addan dinamik olarak IP/Ana Bilgisayar ekle/kaldır.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity ID",
+          "description": "pfSense tracking entity id."
+        },
+        "alias_name": {
+          "name": "Takma Ad (Alias)",
+          "description": "Name of the pfSense alias."
+        },
+        "address": {
+          "name": "Address",
+          "description": "Hedef IP Adresi"
+        },
+        "action": {
+          "name": "Action",
+          "description": "Add / Remove"
+        },
+        "kill_states": {
+          "name": "Kill States",
+          "description": "Instantly terminate target connections."
+        }
+      }
+    },
+    "toggle_dnsbl": {
+      "name": "pfBlockerNG DNSBL'yi Değiştir",
+      "description": "DNSBL reklam engellemeyi anında etkinleştir/devre dışı bırak.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity ID",
+          "description": "pfSense tracking entity id."
+        },
+        "action": {
+          "name": "Action",
+          "description": "Enable / Disable"
+        }
+      }
+    }
+  },
+  "title": "pfSense"
+}

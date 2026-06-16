@@ -1,0 +1,95 @@
+{
+  "config": {
+    "abort": {
+      "already_configured": "Seade on juba konfigureeritud"
+    },
+    "error": {
+      "cannot_connect": "Ühenduse loomine ebaõnnestus",
+      "invalid_auth": "Vigane autentimine",
+      "unknown": "Ootamatu viga",
+      "invalid_url_format": "Vigane URL-i vorming",
+      "privilege_missing": "Kasutajal pole piisavalt õigusi",
+      "connect_timeout": "Ühenduse aegumine",
+      "cannot_connect_ssl": "SSL viga",
+      "url_redirect": "Vale URL (ümbersuunamine)"
+    },
+    "step": {
+      "user": {
+        "data": {
+          "url": "URL",
+          "username": "Kasutajanimi",
+          "name": "Tulemüüri nimi",
+          "password": "Parool",
+          "verify_ssl": "Kinnita SSL sertifikaat"
+        },
+        "title": "Ühenda pfSense tulemüüriga"
+      }
+    }
+  },
+  "options": {
+    "error": {
+      "cannot_connect": "Ühenduse loomine ebaõnnestus",
+      "unknown": "Ootamatu viga"
+    },
+    "step": {
+      "init": {
+        "data": {
+          "scan_interval": "Skannimise intervall (sekundites)",
+          "device_tracker_enabled": "Luba seadme jälgija",
+          "device_tracker_scan_interval": "Jälgija intervall (sekundites)",
+          "device_tracker_consider_home": "Kodus oleku aeg (sekundites)"
+        },
+        "description": "Konfigureeri valikud."
+      },
+      "device_tracker": {
+        "description": "Vali jälgitavad seadmed.",
+        "data": {
+          "devices": "Jälgitavad seadmed"
+        }
+      }
+    }
+  },
+  "services": {
+    "update_alias": {
+      "name": "Värskenda tulemüüri aliast",
+      "description": "Dünaamiline IP/Hosti lisamine/eemaldamine aliasest.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity ID",
+          "description": "pfSense tracking entity id."
+        },
+        "alias_name": {
+          "name": "Aliase nimi",
+          "description": "Name of the pfSense alias."
+        },
+        "address": {
+          "name": "Address",
+          "description": "Sihtmärgi IP-aadress"
+        },
+        "action": {
+          "name": "Action",
+          "description": "Add / Remove"
+        },
+        "kill_states": {
+          "name": "Kill States",
+          "description": "Instantly terminate target connections."
+        }
+      }
+    },
+    "toggle_dnsbl": {
+      "name": "Lülita pfBlockerNG DNSBL",
+      "description": "Luba/keela koheselt DNSBL reklaamiblokeerija.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity ID",
+          "description": "pfSense tracking entity id."
+        },
+        "action": {
+          "name": "Action",
+          "description": "Enable / Disable"
+        }
+      }
+    }
+  },
+  "title": "pfSense"
+}

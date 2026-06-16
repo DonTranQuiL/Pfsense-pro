@@ -1,0 +1,95 @@
+{
+  "config": {
+    "abort": {
+      "already_configured": "Tá an gléas cumraithe cheana"
+    },
+    "error": {
+      "cannot_connect": "Theip ar nascadh",
+      "invalid_auth": "Fíordheimhniú neamhbhailí",
+      "unknown": "Earráid gan choinne",
+      "invalid_url_format": "Formáid URL neamhbhailí",
+      "privilege_missing": "Níl dóthain pribhléidí ag an úsáideoir",
+      "connect_timeout": "Aga istigh naisc",
+      "cannot_connect_ssl": "Teip SSL",
+      "url_redirect": "URL mícheart"
+    },
+    "step": {
+      "user": {
+        "data": {
+          "url": "URL",
+          "username": "Ainm úsáideora",
+          "name": "Ainm Balla Dóite",
+          "password": "Pasfhocal",
+          "verify_ssl": "Fíoraigh teastas SSL"
+        },
+        "title": "Ceangail leis an pfSense"
+      }
+    }
+  },
+  "options": {
+    "error": {
+      "cannot_connect": "Theip ar nascadh",
+      "unknown": "Earráid gan choinne"
+    },
+    "step": {
+      "init": {
+        "data": {
+          "scan_interval": "Achar Scanála (soicindí)",
+          "device_tracker_enabled": "Cumasaigh Rianaire",
+          "device_tracker_scan_interval": "Achar Rianaithe (soicindí)",
+          "device_tracker_consider_home": "Am sa Bhaile (soicindí)"
+        },
+        "description": "Cumraigh Roghanna."
+      },
+      "device_tracker": {
+        "description": "Roghnaigh gléasanna le rianú.",
+        "data": {
+          "devices": "Gléasanna le Rianú"
+        }
+      }
+    }
+  },
+  "services": {
+    "update_alias": {
+      "name": "Nuashonraigh Ailias",
+      "description": "Cuir IP leis/Bain IP ó ailias go dinimiciúil.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity ID",
+          "description": "pfSense tracking entity id."
+        },
+        "alias_name": {
+          "name": "Ainm Ailias",
+          "description": "Name of the pfSense alias."
+        },
+        "address": {
+          "name": "Address",
+          "description": "Seoladh IP sprice"
+        },
+        "action": {
+          "name": "Action",
+          "description": "Add / Remove"
+        },
+        "kill_states": {
+          "name": "Kill States",
+          "description": "Instantly terminate target connections."
+        }
+      }
+    },
+    "toggle_dnsbl": {
+      "name": "Scoránaigh pfBlockerNG DNSBL",
+      "description": "Cumasaigh nó díchumasaigh bac DNSBL láithreach.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity ID",
+          "description": "pfSense tracking entity id."
+        },
+        "action": {
+          "name": "Action",
+          "description": "Enable / Disable"
+        }
+      }
+    }
+  },
+  "title": "pfSense"
+}

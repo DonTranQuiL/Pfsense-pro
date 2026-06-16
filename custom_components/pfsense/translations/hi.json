@@ -1,0 +1,95 @@
+{
+  "config": {
+    "abort": {
+      "already_configured": "डिवाइस पहले से कॉन्फ़िगर है"
+    },
+    "error": {
+      "cannot_connect": "कनेक्ट करने में विफल",
+      "invalid_auth": "अमान्य प्रमाणीकरण",
+      "unknown": "अप्रत्याशित त्रुटि",
+      "invalid_url_format": "अमान्य URL प्रारूप",
+      "privilege_missing": "उपयोगकर्ता के पास अपर्याप्त विशेषाधिकार हैं",
+      "connect_timeout": "कनेक्शन टाइमआउट",
+      "cannot_connect_ssl": "SSL विफलता",
+      "url_redirect": "गलत URL (रीडायरेक्ट)"
+    },
+    "step": {
+      "user": {
+        "data": {
+          "url": "URL",
+          "username": "उपयोगकर्ता नाम",
+          "name": "फ़ायरवॉल का नाम",
+          "password": "पासवर्ड",
+          "verify_ssl": "SSL प्रमाणपत्र सत्यापित करें"
+        },
+        "title": "pfSense फ़ायरवॉल से कनेक्ट करें"
+      }
+    }
+  },
+  "options": {
+    "error": {
+      "cannot_connect": "कनेक्ट करने में विफल",
+      "unknown": "अप्रत्याशित त्रुटि"
+    },
+    "step": {
+      "init": {
+        "data": {
+          "scan_interval": "स्कैन अंतराल (सेकंड)",
+          "device_tracker_enabled": "डिवाइस ट्रैकर सक्षम करें",
+          "device_tracker_scan_interval": "ट्रैकर स्कैन अंतराल (सेकंड)",
+          "device_tracker_consider_home": "घर का समय (सेकंड)"
+        },
+        "description": "विकल्प कॉन्फ़िगर करें।"
+      },
+      "device_tracker": {
+        "description": "चुनें कि आप किन उपकरणों को ट्रैक करना चाहते हैं।",
+        "data": {
+          "devices": "ट्रैक करने के लिए उपकरण"
+        }
+      }
+    }
+  },
+  "services": {
+    "update_alias": {
+      "name": "फ़ायरवॉल उपनाम अपडेट करें",
+      "description": "गतिशील रूप से उपनाम से IP जोड़ें/हटाएं।",
+      "fields": {
+        "entity_id": {
+          "name": "Entity ID",
+          "description": "pfSense tracking entity id."
+        },
+        "alias_name": {
+          "name": "उपनाम (Alias) का नाम",
+          "description": "Name of the pfSense alias."
+        },
+        "address": {
+          "name": "Address",
+          "description": "लक्ष्य IP पता"
+        },
+        "action": {
+          "name": "Action",
+          "description": "Add / Remove"
+        },
+        "kill_states": {
+          "name": "Kill States",
+          "description": "Instantly terminate target connections."
+        }
+      }
+    },
+    "toggle_dnsbl": {
+      "name": "pfBlockerNG DNSBL टॉगल करें",
+      "description": "तुरंत DNSBL विज्ञापन-अवरोधन सक्षम या अक्षम करें।",
+      "fields": {
+        "entity_id": {
+          "name": "Entity ID",
+          "description": "pfSense tracking entity id."
+        },
+        "action": {
+          "name": "Action",
+          "description": "Enable / Disable"
+        }
+      }
+    }
+  },
+  "title": "pfSense"
+}

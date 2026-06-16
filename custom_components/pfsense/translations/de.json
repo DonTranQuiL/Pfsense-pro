@@ -1,17 +1,17 @@
 {
   "config": {
     "abort": {
-      "already_configured": "Gerät ist bereits konfiguriert"
+      "already_configured": "GerÃ¤t ist bereits konfiguriert"
     },
     "error": {
       "cannot_connect": "Verbindung fehlgeschlagen",
-      "invalid_auth": "Ungültige Authentifizierung",
+      "invalid_auth": "UngÃ¼ltige Authentifizierung",
       "unknown": "Unerwarteter Fehler",
-      "invalid_url_format": "Ungültiges URL-Format",
-      "privilege_missing": "Benutzer hat unzureichende Rechte (System - HA node sync)",
+      "invalid_url_format": "UngÃ¼ltiges URL-Format",
+      "privilege_missing": "Benutzer hat unzureichende Berechtigungen",
       "connect_timeout": "Verbindungs-Timeout",
-      "cannot_connect_ssl": "SSL-Fehler (Selbstsigniertes Zertifikat?)",
-      "url_redirect": "Falsche URL (Weiterleitung)"
+      "cannot_connect_ssl": "SSL-Fehler",
+      "url_redirect": "Falsche URL (Umleitung)"
     },
     "step": {
       "user": {
@@ -19,10 +19,10 @@
           "url": "URL",
           "username": "Benutzername",
           "name": "Firewall-Name",
-          "password": "Kennwort",
-          "verify_ssl": "SSL-Zertifikat überprüfen"
+          "password": "Passwort",
+          "verify_ssl": "SSL-Zertifikat Ã¼berprÃ¼fen"
         },
-        "title": "Verbindung mit der pfSense Firewall / Router herstellen"
+        "title": "Mit dem pfSense-Firewall/Router verbinden"
       }
     }
   },
@@ -34,17 +34,59 @@
     "step": {
       "init": {
         "data": {
-          "scan_interval": "Abfrageintervall (Sekunden)",
-          "device_tracker_enabled": "Geräte-Tracker aktivieren",
-          "device_tracker_scan_interval": "Abfrageintervall für Geräte-Tracker (Sekunden)",
-          "device_tracker_consider_home": "Zeitspanne bis Gerät als abwesend gilt (Sekunden)"
+          "scan_interval": "Scan-Intervall (Sekunden)",
+          "device_tracker_enabled": "GerÃ¤te-Tracker aktivieren",
+          "device_tracker_scan_interval": "GerÃ¤te-Tracker Scan-Intervall (Sekunden)",
+          "device_tracker_consider_home": "GerÃ¤te-Tracker Consider Home (Sekunden)"
         },
-        "description": "Konfigurieren Sie die globalen Abfrageintervalle und Geräte-Tracking-Einstellungen für Ihre pfSense-Firewall."
+        "description": "Optionen konfigurieren."
       },
       "device_tracker": {
-        "description": "Wählen Sie aus, welche Netzwerkgeräte Sie als Geräte-Tracker in Home Assistant überwachen möchten.",
+        "description": "WÃ¤hlen Sie aus, welche GerÃ¤te Sie verfolgen mÃ¶chten.",
         "data": {
-          "devices": "Zu überwachende Geräte"
+          "devices": "Zu verfolgende GerÃ¤te"
+        }
+      }
+    }
+  },
+  "services": {
+    "update_alias": {
+      "name": "Firewall-Alias aktualisieren",
+      "description": "IP/Host dynamisch zu einer pfSense-Aliasgruppe hinzufÃ¼gen/entfernen.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity ID",
+          "description": "pfSense tracking entity id."
+        },
+        "alias_name": {
+          "name": "Alias-Name",
+          "description": "Name of the pfSense alias."
+        },
+        "address": {
+          "name": "Address",
+          "description": "Ziel-IP-Adresse"
+        },
+        "action": {
+          "name": "Action",
+          "description": "Add / Remove"
+        },
+        "kill_states": {
+          "name": "Kill States",
+          "description": "Instantly terminate target connections."
+        }
+      }
+    },
+    "toggle_dnsbl": {
+      "name": "pfBlockerNG DNSBL umschalten",
+      "description": "DNSBL-Ad-Blocking sofort aktivieren/deaktivieren.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity ID",
+          "description": "pfSense tracking entity id."
+        },
+        "action": {
+          "name": "Action",
+          "description": "Enable / Disable"
         }
       }
     }

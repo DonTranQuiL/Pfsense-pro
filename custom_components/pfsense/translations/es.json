@@ -1,50 +1,92 @@
 {
   "config": {
     "abort": {
-      "already_configured": "El dispositivo ya est· configurado"
+      "already_configured": "El dispositivo ya est√° configurado"
     },
     "error": {
-      "cannot_connect": "Error al conectar",
-      "invalid_auth": "AutenticaciÛn inv·lida",
+      "cannot_connect": "Error de conexi√≥n",
+      "invalid_auth": "Autenticaci√≥n no v√°lida",
       "unknown": "Error inesperado",
-      "invalid_url_format": "Formato de URL inv·lido",
-      "privilege_missing": "El usuario no tiene privilegios suficientes (System - HA node sync)",
-      "connect_timeout": "Tiempo de espera de la conexiÛn agotado",
-      "cannot_connect_ssl": "Fallo de SSL (øCertificado auto-firmado?)",
-      "url_redirect": "URL incorrecta (redirecciÛn)"
+      "invalid_url_format": "Formato de URL no v√°lido",
+      "privilege_missing": "El usuario no tiene suficientes privilegios",
+      "connect_timeout": "Tiempo de espera de conexi√≥n",
+      "cannot_connect_ssl": "Fallo de SSL",
+      "url_redirect": "URL incorrecta (redirecci√≥n)"
     },
     "step": {
       "user": {
         "data": {
           "url": "URL",
           "username": "Nombre de usuario",
-          "name": "Nombre del Cortafuegos",
-          "password": "ContraseÒa",
+          "name": "Nombre del cortafuegos",
+          "password": "Contrase√±a",
           "verify_ssl": "Verificar certificado SSL"
         },
-        "title": "Conectarse al cortafuegos / enrutador pfSense"
+        "title": "Conectar al cortafuegos/enrutador pfSense"
       }
     }
   },
   "options": {
     "error": {
-      "cannot_connect": "Error al conectar",
+      "cannot_connect": "Error de conexi√≥n",
       "unknown": "Error inesperado"
     },
     "step": {
       "init": {
         "data": {
-          "scan_interval": "Intervalo de muestreo (segundos)",
-          "device_tracker_enabled": "Habilitar el seguimiento de dispositivos",
-          "device_tracker_scan_interval": "Intervalo de seguimiento de dispositivos (segundos)",
-          "device_tracker_consider_home": "Tiempo para considerarse en casa (segundos)"
+          "scan_interval": "Intervalo de escaneo (segundos)",
+          "device_tracker_enabled": "Habilitar rastreador de dispositivos",
+          "device_tracker_scan_interval": "Intervalo del rastreador (segundos)",
+          "device_tracker_consider_home": "Tiempo en casa (segundos)"
         },
-        "description": "Configure los intervalos de muestreo globales y la configuraciÛn de seguimiento de dispositivos para su cortafuegos pfSense."
+        "description": "Configurar opciones."
       },
       "device_tracker": {
-        "description": "Elija quÈ dispositivos de red desea rastrear como rastreador de dispositivos en Home Assistant.",
+        "description": "Elija qu√© dispositivos rastrear.",
         "data": {
           "devices": "Dispositivos a rastrear"
+        }
+      }
+    }
+  },
+  "services": {
+    "update_alias": {
+      "name": "Actualizar alias de cortafuegos",
+      "description": "Agregue o elimine din√°micamente una IP/Host de un alias.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity ID",
+          "description": "pfSense tracking entity id."
+        },
+        "alias_name": {
+          "name": "Nombre del alias",
+          "description": "Name of the pfSense alias."
+        },
+        "address": {
+          "name": "Address",
+          "description": "Direcci√≥n IP"
+        },
+        "action": {
+          "name": "Action",
+          "description": "Add / Remove"
+        },
+        "kill_states": {
+          "name": "Kill States",
+          "description": "Instantly terminate target connections."
+        }
+      }
+    },
+    "toggle_dnsbl": {
+      "name": "Alternar pfBlockerNG DNSBL",
+      "description": "Habilite o deshabilite instant√°neamente el bloqueo DNSBL.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity ID",
+          "description": "pfSense tracking entity id."
+        },
+        "action": {
+          "name": "Action",
+          "description": "Enable / Disable"
         }
       }
     }

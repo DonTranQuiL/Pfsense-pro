@@ -1,0 +1,95 @@
+{
+  "config": {
+    "abort": {
+      "already_configured": "Įrenginys jau sukonfigūruotas"
+    },
+    "error": {
+      "cannot_connect": "Nepavyko prisijungti",
+      "invalid_auth": "Neteisingas autentifikavimas",
+      "unknown": "Netikėta klaida",
+      "invalid_url_format": "Neteisingas URL formatas",
+      "privilege_missing": "Vartotojas neturi pakankamai teisių",
+      "connect_timeout": "Ryšio laikas baigėsi",
+      "cannot_connect_ssl": "SSL klaida",
+      "url_redirect": "Neteisingas URL (nukreipimas)"
+    },
+    "step": {
+      "user": {
+        "data": {
+          "url": "URL",
+          "username": "Vartotojo vardas",
+          "name": "Užkardos pavadinimas",
+          "password": "Slaptažodis",
+          "verify_ssl": "Patvirtinti SSL sertifikatą"
+        },
+        "title": "Prisijungti prie pfSense"
+      }
+    }
+  },
+  "options": {
+    "error": {
+      "cannot_connect": "Nepavyko prisijungti",
+      "unknown": "Netikėta klaida"
+    },
+    "step": {
+      "init": {
+        "data": {
+          "scan_interval": "Skenavimo intervalas (sekundėmis)",
+          "device_tracker_enabled": "Įjungti įrenginio stebėjimą",
+          "device_tracker_scan_interval": "Stebėjimo intervalas (sekundėmis)",
+          "device_tracker_consider_home": "Laikas namuose (sekundėmis)"
+        },
+        "description": "Konfigūruoti parinktis."
+      },
+      "device_tracker": {
+        "description": "Pasirinkite įrenginius stebėjimui.",
+        "data": {
+          "devices": "Stebimi įrenginiai"
+        }
+      }
+    }
+  },
+  "services": {
+    "update_alias": {
+      "name": "Atnaujinti pseudonimą",
+      "description": "Dinamiškai pridėti/pašalinti IP iš pseudonimo.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity ID",
+          "description": "pfSense tracking entity id."
+        },
+        "alias_name": {
+          "name": "Pseudonimo pavadinimas",
+          "description": "Name of the pfSense alias."
+        },
+        "address": {
+          "name": "Address",
+          "description": "Tikslinis IP adresas"
+        },
+        "action": {
+          "name": "Action",
+          "description": "Add / Remove"
+        },
+        "kill_states": {
+          "name": "Kill States",
+          "description": "Instantly terminate target connections."
+        }
+      }
+    },
+    "toggle_dnsbl": {
+      "name": "Perjungti pfBlockerNG DNSBL",
+      "description": "Iškart įgalinti/išjungti DNSBL blokavimą.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity ID",
+          "description": "pfSense tracking entity id."
+        },
+        "action": {
+          "name": "Action",
+          "description": "Enable / Disable"
+        }
+      }
+    }
+  },
+  "title": "pfSense"
+}

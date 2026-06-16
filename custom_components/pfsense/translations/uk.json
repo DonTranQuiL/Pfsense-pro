@@ -1,0 +1,95 @@
+{
+  "config": {
+    "abort": {
+      "already_configured": "Пристрій вже налаштовано"
+    },
+    "error": {
+      "cannot_connect": "Помилка підключення",
+      "invalid_auth": "Невірна автентифікація",
+      "unknown": "Непередбачена помилка",
+      "invalid_url_format": "Невірний формат URL",
+      "privilege_missing": "Недостатньо прав",
+      "connect_timeout": "Тайм-аут підключення",
+      "cannot_connect_ssl": "Помилка SSL",
+      "url_redirect": "Невірний URL (перенаправлення)"
+    },
+    "step": {
+      "user": {
+        "data": {
+          "url": "URL",
+          "username": "Ім'я користувача",
+          "name": "Ім'я брандмауера",
+          "password": "Пароль",
+          "verify_ssl": "Перевірити SSL-сертифікат"
+        },
+        "title": "Підключитися до маршрутизатора pfSense"
+      }
+    }
+  },
+  "options": {
+    "error": {
+      "cannot_connect": "Помилка підключення",
+      "unknown": "Непередбачена помилка"
+    },
+    "step": {
+      "init": {
+        "data": {
+          "scan_interval": "Інтервал сканування (сек)",
+          "device_tracker_enabled": "Увімкнути відстеження",
+          "device_tracker_scan_interval": "Інтервал відстеження (сек)",
+          "device_tracker_consider_home": "Час знаходження вдома (сек)"
+        },
+        "description": "Налаштувати параметри."
+      },
+      "device_tracker": {
+        "description": "Виберіть пристрої для відстеження.",
+        "data": {
+          "devices": "Пристрої для відстеження"
+        }
+      }
+    }
+  },
+  "services": {
+    "update_alias": {
+      "name": "Оновити псевдонім",
+      "description": "Динамічне додавання/видалення IP з псевдоніма.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity ID",
+          "description": "pfSense tracking entity id."
+        },
+        "alias_name": {
+          "name": "Ім'я псевдоніма",
+          "description": "Name of the pfSense alias."
+        },
+        "address": {
+          "name": "Address",
+          "description": "Цільовий IP-адреса"
+        },
+        "action": {
+          "name": "Action",
+          "description": "Add / Remove"
+        },
+        "kill_states": {
+          "name": "Kill States",
+          "description": "Instantly terminate target connections."
+        }
+      }
+    },
+    "toggle_dnsbl": {
+      "name": "Перемкнути pfBlockerNG DNSBL",
+      "description": "Миттєве увімкнення/вимкнення блокування DNSBL.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity ID",
+          "description": "pfSense tracking entity id."
+        },
+        "action": {
+          "name": "Action",
+          "description": "Enable / Disable"
+        }
+      }
+    }
+  },
+  "title": "pfSense"
+}

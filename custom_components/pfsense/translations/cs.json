@@ -1,0 +1,95 @@
+{
+  "config": {
+    "abort": {
+      "already_configured": "Zařízení je již nakonfigurováno"
+    },
+    "error": {
+      "cannot_connect": "Připojení se nezdařilo",
+      "invalid_auth": "Neplatné ověření",
+      "unknown": "Neočekávaná chyba",
+      "invalid_url_format": "Neplatný formát URL",
+      "privilege_missing": "Uživatel nemá dostatečná oprávnění",
+      "connect_timeout": "Časový limit připojení",
+      "cannot_connect_ssl": "Chyba SSL",
+      "url_redirect": "Nesprávná URL (přesměrování)"
+    },
+    "step": {
+      "user": {
+        "data": {
+          "url": "URL",
+          "username": "Uživatelské jméno",
+          "name": "Název firewallu",
+          "password": "Heslo",
+          "verify_ssl": "Ověřit certifikát SSL"
+        },
+        "title": "Připojit k firewallu pfSense"
+      }
+    }
+  },
+  "options": {
+    "error": {
+      "cannot_connect": "Připojení se nezdařilo",
+      "unknown": "Neočekávaná chyba"
+    },
+    "step": {
+      "init": {
+        "data": {
+          "scan_interval": "Interval skenování (sekundy)",
+          "device_tracker_enabled": "Povolit sledování zařízení",
+          "device_tracker_scan_interval": "Interval sledování (sekundy)",
+          "device_tracker_consider_home": "Čas sledování doma (sekundy)"
+        },
+        "description": "Konfigurovat možnosti."
+      },
+      "device_tracker": {
+        "description": "Vyberte zařízení, která chcete sledovat.",
+        "data": {
+          "devices": "Zařízení ke sledování"
+        }
+      }
+    }
+  },
+  "services": {
+    "update_alias": {
+      "name": "Aktualizovat alias firewallu",
+      "description": "Dynamicky přidat/odebrat IP z aliasu.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity ID",
+          "description": "pfSense tracking entity id."
+        },
+        "alias_name": {
+          "name": "Název aliasu",
+          "description": "Name of the pfSense alias."
+        },
+        "address": {
+          "name": "Address",
+          "description": "Cílová IP adresa"
+        },
+        "action": {
+          "name": "Action",
+          "description": "Add / Remove"
+        },
+        "kill_states": {
+          "name": "Kill States",
+          "description": "Instantly terminate target connections."
+        }
+      }
+    },
+    "toggle_dnsbl": {
+      "name": "Přepnout pfBlockerNG DNSBL",
+      "description": "Okamžitě povolit/zakázat blokování reklam DNSBL.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity ID",
+          "description": "pfSense tracking entity id."
+        },
+        "action": {
+          "name": "Action",
+          "description": "Enable / Disable"
+        }
+      }
+    }
+  },
+  "title": "pfSense"
+}

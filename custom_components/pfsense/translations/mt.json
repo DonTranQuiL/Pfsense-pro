@@ -1,0 +1,95 @@
+{
+  "config": {
+    "abort": {
+      "already_configured": "L-apparat diġà huwa kkonfigurat"
+    },
+    "error": {
+      "cannot_connect": "Ma setax jikkonnettja",
+      "invalid_auth": "Awtentikazzjoni invalida",
+      "unknown": "Żball mhux mistenni",
+      "invalid_url_format": "Format URL invalidu",
+      "privilege_missing": "Utent m'għandux biżżejjed privileġġi",
+      "connect_timeout": "Skada l-ħin tal-konnessjoni",
+      "cannot_connect_ssl": "Falliment SSL",
+      "url_redirect": "URL mhux korrett"
+    },
+    "step": {
+      "user": {
+        "data": {
+          "url": "URL",
+          "username": "Isem l-utent",
+          "name": "Isem Firewall",
+          "password": "Password",
+          "verify_ssl": "Ivverifika ċ-ċertifikat SSL"
+        },
+        "title": "Qabbad mal-pfSense"
+      }
+    }
+  },
+  "options": {
+    "error": {
+      "cannot_connect": "Ma setax jikkonnettja",
+      "unknown": "Żball mhux mistenni"
+    },
+    "step": {
+      "init": {
+        "data": {
+          "scan_interval": "Intervall tal-Iskannjar (sekondi)",
+          "device_tracker_enabled": "Ippermetti t-Tracker tal-Apparat",
+          "device_tracker_scan_interval": "Intervall tat-Tracker (sekondi)",
+          "device_tracker_consider_home": "Ħin tad-dar (sekondi)"
+        },
+        "description": "Ikkonfigura l-Għażliet."
+      },
+      "device_tracker": {
+        "description": "Agħżel apparati x'tsegwi.",
+        "data": {
+          "devices": "Apparati x'tsegwi"
+        }
+      }
+    }
+  },
+  "services": {
+    "update_alias": {
+      "name": "Aġġorna l-Alias",
+      "description": "Żid/neħħi b'mod dinamiku IP minn alias.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity ID",
+          "description": "pfSense tracking entity id."
+        },
+        "alias_name": {
+          "name": "Isem Alias",
+          "description": "Name of the pfSense alias."
+        },
+        "address": {
+          "name": "Address",
+          "description": "Indirizz IP mira"
+        },
+        "action": {
+          "name": "Action",
+          "description": "Add / Remove"
+        },
+        "kill_states": {
+          "name": "Kill States",
+          "description": "Instantly terminate target connections."
+        }
+      }
+    },
+    "toggle_dnsbl": {
+      "name": "Biddel pfBlockerNG DNSBL",
+      "description": "Ixgħel/itfi minnufih l-imblukkar tad-DNSBL.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity ID",
+          "description": "pfSense tracking entity id."
+        },
+        "action": {
+          "name": "Action",
+          "description": "Enable / Disable"
+        }
+      }
+    }
+  },
+  "title": "pfSense"
+}

@@ -1,0 +1,95 @@
+{
+  "config": {
+    "abort": {
+      "already_configured": "Enheten är redan konfigurerad"
+    },
+    "error": {
+      "cannot_connect": "Kunde inte ansluta",
+      "invalid_auth": "Ogiltig autentisering",
+      "unknown": "Oväntat fel",
+      "invalid_url_format": "Ogiltigt URL-format",
+      "privilege_missing": "Användaren har otillräckliga rättigheter",
+      "connect_timeout": "Anslutningen gjorde timeout",
+      "cannot_connect_ssl": "SSL-fel",
+      "url_redirect": "Felaktig URL (omdirigering)"
+    },
+    "step": {
+      "user": {
+        "data": {
+          "url": "URL",
+          "username": "Användarnamn",
+          "name": "Brandväggsnamn",
+          "password": "Lösenord",
+          "verify_ssl": "Verifiera SSL-certifikat"
+        },
+        "title": "Anslut till pfSense-brandväggen"
+      }
+    }
+  },
+  "options": {
+    "error": {
+      "cannot_connect": "Kunde inte ansluta",
+      "unknown": "Oväntat fel"
+    },
+    "step": {
+      "init": {
+        "data": {
+          "scan_interval": "Skanningsintervall (sekunder)",
+          "device_tracker_enabled": "Aktivera enhetsspårning",
+          "device_tracker_scan_interval": "Spårningsintervall (sekunder)",
+          "device_tracker_consider_home": "Spårningstid hemma (sekunder)"
+        },
+        "description": "Konfigurera alternativ."
+      },
+      "device_tracker": {
+        "description": "Välj vilka enheter som ska spåras.",
+        "data": {
+          "devices": "Enheter att spåra"
+        }
+      }
+    }
+  },
+  "services": {
+    "update_alias": {
+      "name": "Uppdatera brandväggsalias",
+      "description": "Lägg till/ta bort IP/värd dynamiskt från ett alias.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity ID",
+          "description": "pfSense tracking entity id."
+        },
+        "alias_name": {
+          "name": "Aliasnamn",
+          "description": "Name of the pfSense alias."
+        },
+        "address": {
+          "name": "Address",
+          "description": "Mål-IP-adress"
+        },
+        "action": {
+          "name": "Action",
+          "description": "Add / Remove"
+        },
+        "kill_states": {
+          "name": "Kill States",
+          "description": "Instantly terminate target connections."
+        }
+      }
+    },
+    "toggle_dnsbl": {
+      "name": "Växla pfBlockerNG DNSBL",
+      "description": "Aktivera/inaktivera DNSBL-annonsblockering.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity ID",
+          "description": "pfSense tracking entity id."
+        },
+        "action": {
+          "name": "Action",
+          "description": "Enable / Disable"
+        }
+      }
+    }
+  },
+  "title": "pfSense"
+}

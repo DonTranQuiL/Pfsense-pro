@@ -1,0 +1,95 @@
+{
+  "config": {
+    "abort": {
+      "already_configured": "Thiết bị đã được cấu hình"
+    },
+    "error": {
+      "cannot_connect": "Không thể kết nối",
+      "invalid_auth": "Xác thực không hợp lệ",
+      "unknown": "Lỗi không xác định",
+      "invalid_url_format": "Định dạng URL không hợp lệ",
+      "privilege_missing": "Người dùng không có đủ quyền",
+      "connect_timeout": "Hết thời gian kết nối",
+      "cannot_connect_ssl": "Lỗi SSL",
+      "url_redirect": "URL không chính xác (chuyển hướng)"
+    },
+    "step": {
+      "user": {
+        "data": {
+          "url": "URL",
+          "username": "Tên người dùng",
+          "name": "Tên Tường lửa",
+          "password": "Mật khẩu",
+          "verify_ssl": "Xác minh chứng chỉ SSL"
+        },
+        "title": "Kết nối với tường lửa pfSense"
+      }
+    }
+  },
+  "options": {
+    "error": {
+      "cannot_connect": "Không thể kết nối",
+      "unknown": "Lỗi không xác định"
+    },
+    "step": {
+      "init": {
+        "data": {
+          "scan_interval": "Khoảng thời gian quét (giây)",
+          "device_tracker_enabled": "Bật Trình theo dõi Thiết bị",
+          "device_tracker_scan_interval": "Khoảng thời gian quét Trình theo dõi (giây)",
+          "device_tracker_consider_home": "Thời gian ở nhà (giây)"
+        },
+        "description": "Cấu hình Tùy chọn."
+      },
+      "device_tracker": {
+        "description": "Chọn thiết bị bạn muốn theo dõi.",
+        "data": {
+          "devices": "Thiết bị để theo dõi"
+        }
+      }
+    }
+  },
+  "services": {
+    "update_alias": {
+      "name": "Cập nhật Bí danh Tường lửa",
+      "description": "Thêm/xóa IP/Máy lưu trữ động khỏi bí danh.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity ID",
+          "description": "pfSense tracking entity id."
+        },
+        "alias_name": {
+          "name": "Tên Bí danh",
+          "description": "Name of the pfSense alias."
+        },
+        "address": {
+          "name": "Address",
+          "description": "Địa chỉ IP mục tiêu"
+        },
+        "action": {
+          "name": "Action",
+          "description": "Add / Remove"
+        },
+        "kill_states": {
+          "name": "Kill States",
+          "description": "Instantly terminate target connections."
+        }
+      }
+    },
+    "toggle_dnsbl": {
+      "name": "Chuyển đổi pfBlockerNG DNSBL",
+      "description": "Bật hoặc tắt chặn quảng cáo DNSBL ngay lập tức.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity ID",
+          "description": "pfSense tracking entity id."
+        },
+        "action": {
+          "name": "Action",
+          "description": "Enable / Disable"
+        }
+      }
+    }
+  },
+  "title": "pfSense"
+}

@@ -8,9 +8,9 @@
       "invalid_auth": "Ongeldige authenticatie",
       "unknown": "Onverwachte fout",
       "invalid_url_format": "Ongeldig URL-formaat",
-      "privilege_missing": "Gebruiker heeft onvoldoende rechten (System - HA node sync)",
+      "privilege_missing": "Gebruiker heeft onvoldoende rechten",
       "connect_timeout": "Verbinding time-out",
-      "cannot_connect_ssl": "SSL-fout (Zelfondertekend certificaat?)",
+      "cannot_connect_ssl": "SSL-fout",
       "url_redirect": "Onjuiste URL (omleiding)"
     },
     "step": {
@@ -22,7 +22,7 @@
           "password": "Wachtwoord",
           "verify_ssl": "Verifieer SSL-certificaat"
         },
-        "title": "Verbinden met de pfSense firewall / router"
+        "title": "Maak verbinding met de pfSense firewall / router"
       }
     }
   },
@@ -34,17 +34,59 @@
     "step": {
       "init": {
         "data": {
-          "scan_interval": "Scaninterval (seconden)",
-          "device_tracker_enabled": "Apparaattracking inschakelen",
-          "device_tracker_scan_interval": "Scaninterval apparaattracking (seconden)",
-          "device_tracker_consider_home": "Tijd totdat apparaat afwezig is (seconden)"
+          "scan_interval": "Scan Interval (seconden)",
+          "device_tracker_enabled": "Apparaat Tracker Inschakelen",
+          "device_tracker_scan_interval": "Apparaat Tracker Scan Interval (seconden)",
+          "device_tracker_consider_home": "Apparaat Tracker Consider Home (seconden)"
         },
-        "description": "Configureer de algemene scanintervallen en instellingen voor apparaattracking voor je pfSense-firewall."
+        "description": "Opties Configureren."
       },
       "device_tracker": {
-        "description": "Kies welke netwerkapparaten je wilt volgen als device tracker in Home Assistant.",
+        "description": "Kies welke apparaten u wilt volgen.",
         "data": {
-          "devices": "Te volgen apparaten"
+          "devices": "Apparaten om te volgen"
+        }
+      }
+    }
+  },
+  "services": {
+    "update_alias": {
+      "name": "Firewall Alias Bijwerken",
+      "description": "Dynamisch een IP/Host toevoegen aan of verwijderen uit een pfSense aliasgroep.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity ID",
+          "description": "pfSense tracking entity id."
+        },
+        "alias_name": {
+          "name": "Alias Naam",
+          "description": "Name of the pfSense alias."
+        },
+        "address": {
+          "name": "Address",
+          "description": "Doel IP-adres"
+        },
+        "action": {
+          "name": "Action",
+          "description": "Add / Remove"
+        },
+        "kill_states": {
+          "name": "Kill States",
+          "description": "Instantly terminate target connections."
+        }
+      }
+    },
+    "toggle_dnsbl": {
+      "name": "pfBlockerNG DNSBL Schakelen",
+      "description": "Direct DNSBL ad-blocking in- of uitschakelen.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity ID",
+          "description": "pfSense tracking entity id."
+        },
+        "action": {
+          "name": "Action",
+          "description": "Enable / Disable"
         }
       }
     }

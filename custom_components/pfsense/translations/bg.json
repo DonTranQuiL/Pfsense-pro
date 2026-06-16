@@ -1,0 +1,95 @@
+{
+  "config": {
+    "abort": {
+      "already_configured": "Устройството вече е конфигурирано"
+    },
+    "error": {
+      "cannot_connect": "Неуспешно свързване",
+      "invalid_auth": "Невалидно удостоверяване",
+      "unknown": "Неочаквана грешка",
+      "invalid_url_format": "Невалиден URL формат",
+      "privilege_missing": "Потребителят няма достатъчно права",
+      "connect_timeout": "Изчакване на връзката",
+      "cannot_connect_ssl": "SSL грешка",
+      "url_redirect": "Неправилен URL (пренасочване)"
+    },
+    "step": {
+      "user": {
+        "data": {
+          "url": "URL",
+          "username": "Потребителско име",
+          "name": "Име на защитната стена",
+          "password": "Парола",
+          "verify_ssl": "Проверка на SSL сертификат"
+        },
+        "title": "Свързване към pfSense"
+      }
+    }
+  },
+  "options": {
+    "error": {
+      "cannot_connect": "Неуспешно свързване",
+      "unknown": "Неочаквана грешка"
+    },
+    "step": {
+      "init": {
+        "data": {
+          "scan_interval": "Интервал на сканиране (секунди)",
+          "device_tracker_enabled": "Активиране на проследяване",
+          "device_tracker_scan_interval": "Интервал на проследяване (секунди)",
+          "device_tracker_consider_home": "Време у дома (секунди)"
+        },
+        "description": "Конфигуриране на опции."
+      },
+      "device_tracker": {
+        "description": "Изберете устройства за проследяване.",
+        "data": {
+          "devices": "Устройства за проследяване"
+        }
+      }
+    }
+  },
+  "services": {
+    "update_alias": {
+      "name": "Актуализиране на псевдоним",
+      "description": "Динамично добавяне/премахване на IP от псевдоним.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity ID",
+          "description": "pfSense tracking entity id."
+        },
+        "alias_name": {
+          "name": "Име на псевдоним",
+          "description": "Name of the pfSense alias."
+        },
+        "address": {
+          "name": "Address",
+          "description": "Целеви IP адрес"
+        },
+        "action": {
+          "name": "Action",
+          "description": "Add / Remove"
+        },
+        "kill_states": {
+          "name": "Kill States",
+          "description": "Instantly terminate target connections."
+        }
+      }
+    },
+    "toggle_dnsbl": {
+      "name": "Превключване на pfBlockerNG DNSBL",
+      "description": "Незабавно активиране/деактивиране на DNSBL блокиране.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity ID",
+          "description": "pfSense tracking entity id."
+        },
+        "action": {
+          "name": "Action",
+          "description": "Enable / Disable"
+        }
+      }
+    }
+  },
+  "title": "pfSense"
+}

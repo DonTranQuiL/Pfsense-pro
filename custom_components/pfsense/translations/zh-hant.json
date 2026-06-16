@@ -1,0 +1,95 @@
+{
+  "config": {
+    "abort": {
+      "already_configured": "設備已配置"
+    },
+    "error": {
+      "cannot_connect": "連線失敗",
+      "invalid_auth": "無效的身份驗證",
+      "unknown": "未知錯誤",
+      "invalid_url_format": "無效的 URL 格式",
+      "privilege_missing": "使用者權限不足",
+      "connect_timeout": "連線超時",
+      "cannot_connect_ssl": "SSL 失敗",
+      "url_redirect": "不正確的 URL (重定向)"
+    },
+    "step": {
+      "user": {
+        "data": {
+          "url": "URL",
+          "username": "使用者名稱",
+          "name": "防火牆名稱",
+          "password": "密碼",
+          "verify_ssl": "驗證 SSL 證書"
+        },
+        "title": "連接到 pfSense 防火牆/路由器"
+      }
+    }
+  },
+  "options": {
+    "error": {
+      "cannot_connect": "連線失敗",
+      "unknown": "未知錯誤"
+    },
+    "step": {
+      "init": {
+        "data": {
+          "scan_interval": "掃描間隔（秒）",
+          "device_tracker_enabled": "啟用設備追蹤器",
+          "device_tracker_scan_interval": "設備追蹤器掃描間隔（秒）",
+          "device_tracker_consider_home": "設備追蹤器在家時間（秒）"
+        },
+        "description": "配置選項。"
+      },
+      "device_tracker": {
+        "description": "選擇您要追蹤的設備。",
+        "data": {
+          "devices": "要追蹤的設備"
+        }
+      }
+    }
+  },
+  "services": {
+    "update_alias": {
+      "name": "更新防火牆別名",
+      "description": "動態地從 pfSense 別名組中添加或刪除 IP/主機。",
+      "fields": {
+        "entity_id": {
+          "name": "Entity ID",
+          "description": "pfSense tracking entity id."
+        },
+        "alias_name": {
+          "name": "別名名稱",
+          "description": "Name of the pfSense alias."
+        },
+        "address": {
+          "name": "Address",
+          "description": "目標 IP 地址"
+        },
+        "action": {
+          "name": "Action",
+          "description": "Add / Remove"
+        },
+        "kill_states": {
+          "name": "Kill States",
+          "description": "Instantly terminate target connections."
+        }
+      }
+    },
+    "toggle_dnsbl": {
+      "name": "切換 pfBlockerNG DNSBL",
+      "description": "立即啟用或禁用 DNSBL 廣告攔截。",
+      "fields": {
+        "entity_id": {
+          "name": "Entity ID",
+          "description": "pfSense tracking entity id."
+        },
+        "action": {
+          "name": "Action",
+          "description": "Enable / Disable"
+        }
+      }
+    }
+  },
+  "title": "pfSense"
+}

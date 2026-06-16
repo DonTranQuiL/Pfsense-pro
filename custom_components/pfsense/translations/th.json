@@ -1,0 +1,95 @@
+{
+  "config": {
+    "abort": {
+      "already_configured": "กำหนดค่าอุปกรณ์แล้ว"
+    },
+    "error": {
+      "cannot_connect": "การเชื่อมต่อล้มเหลว",
+      "invalid_auth": "การตรวจสอบสิทธิ์ไม่ถูกต้อง",
+      "unknown": "ข้อผิดพลาดที่ไม่คาดคิด",
+      "invalid_url_format": "รูปแบบ URL ไม่ถูกต้อง",
+      "privilege_missing": "ผู้ใช้มีสิทธิ์ไม่เพียงพอ",
+      "connect_timeout": "หมดเวลาการเชื่อมต่อ",
+      "cannot_connect_ssl": "ข้อผิดพลาด SSL",
+      "url_redirect": "URL ไม่ถูกต้อง (การเปลี่ยนเส้นทาง)"
+    },
+    "step": {
+      "user": {
+        "data": {
+          "url": "URL",
+          "username": "ชื่อผู้ใช้",
+          "name": "ชื่อไฟร์วอลล์",
+          "password": "รหัสผ่าน",
+          "verify_ssl": "ยืนยันใบรับรอง SSL"
+        },
+        "title": "เชื่อมต่อกับไฟร์วอลล์ pfSense"
+      }
+    }
+  },
+  "options": {
+    "error": {
+      "cannot_connect": "การเชื่อมต่อล้มเหลว",
+      "unknown": "ข้อผิดพลาดที่ไม่คาดคิด"
+    },
+    "step": {
+      "init": {
+        "data": {
+          "scan_interval": "ช่วงเวลาการสแกน (วินาที)",
+          "device_tracker_enabled": "เปิดใช้งานตัวติดตามอุปกรณ์",
+          "device_tracker_scan_interval": "ช่วงเวลาการสแกนตัวติดตาม (วินาที)",
+          "device_tracker_consider_home": "เวลาที่อยู่ในบ้าน (วินาที)"
+        },
+        "description": "กำหนดค่าตัวเลือก"
+      },
+      "device_tracker": {
+        "description": "เลือกอุปกรณ์ที่คุณต้องการติดตาม",
+        "data": {
+          "devices": "อุปกรณ์ที่จะติดตาม"
+        }
+      }
+    }
+  },
+  "services": {
+    "update_alias": {
+      "name": "อัปเดตนามแฝงของไฟร์วอลล์",
+      "description": "เพิ่มหรือลบ IP/Host แบบไดนามิกจากนามแฝง",
+      "fields": {
+        "entity_id": {
+          "name": "Entity ID",
+          "description": "pfSense tracking entity id."
+        },
+        "alias_name": {
+          "name": "ชื่อนามแฝง",
+          "description": "Name of the pfSense alias."
+        },
+        "address": {
+          "name": "Address",
+          "description": "ที่อยู่ IP เป้าหมาย"
+        },
+        "action": {
+          "name": "Action",
+          "description": "Add / Remove"
+        },
+        "kill_states": {
+          "name": "Kill States",
+          "description": "Instantly terminate target connections."
+        }
+      }
+    },
+    "toggle_dnsbl": {
+      "name": "สลับ pfBlockerNG DNSBL",
+      "description": "เปิดหรือปิดการบล็อกโฆษณา DNSBL ทันที",
+      "fields": {
+        "entity_id": {
+          "name": "Entity ID",
+          "description": "pfSense tracking entity id."
+        },
+        "action": {
+          "name": "Action",
+          "description": "Enable / Disable"
+        }
+      }
+    }
+  },
+  "title": "pfSense"
+}

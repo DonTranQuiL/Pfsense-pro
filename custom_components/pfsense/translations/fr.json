@@ -1,16 +1,16 @@
 {
   "config": {
     "abort": {
-      "already_configured": "L'appareil est déjà configuré"
+      "already_configured": "L'appareil est dÃ©jÃ  configurÃ©"
     },
     "error": {
-      "cannot_connect": "Échec de la connexion",
+      "cannot_connect": "Ã‰chec de la connexion",
       "invalid_auth": "Authentification invalide",
       "unknown": "Erreur inattendue",
       "invalid_url_format": "Format d'URL invalide",
-      "privilege_missing": "L'utilisateur n'a pas de privilèges suffisants (System - HA node sync)",
-      "connect_timeout": "Délai de connexion dépassé",
-      "cannot_connect_ssl": "Échec SSL (Certificat auto-signé?)",
+      "privilege_missing": "PrivilÃ¨ges insuffisants",
+      "connect_timeout": "DÃ©lai de connexion",
+      "cannot_connect_ssl": "Ã‰chec SSL",
       "url_redirect": "URL incorrecte (redirection)"
     },
     "step": {
@@ -20,31 +20,73 @@
           "username": "Nom d'utilisateur",
           "name": "Nom du pare-feu",
           "password": "Mot de passe",
-          "verify_ssl": "Vérifier le certificat SSL"
+          "verify_ssl": "VÃ©rifier le certificat SSL"
         },
-        "title": "Se connecter au pare-feu / routeur pfSense"
+        "title": "Se connecter au pare-feu/routeur pfSense"
       }
     }
   },
   "options": {
     "error": {
-      "cannot_connect": "Échec de la connexion",
+      "cannot_connect": "Ã‰chec de la connexion",
       "unknown": "Erreur inattendue"
     },
     "step": {
       "init": {
         "data": {
-          "scan_interval": "Intervalle de scrutation (secondes)",
+          "scan_interval": "Intervalle d'analyse (secondes)",
           "device_tracker_enabled": "Activer le suivi des appareils",
-          "device_tracker_scan_interval": "Intervalle de suivi des appareils (secondes)",
-          "device_tracker_consider_home": "Délai avant d'être considéré comme absent (secondes)"
+          "device_tracker_scan_interval": "Intervalle de suivi (secondes)",
+          "device_tracker_consider_home": "DÃ©lai de prÃ©sence (secondes)"
         },
-        "description": "Configurez les intervalles de scrutation globaux et les paramètres de suivi des appareils pour votre pare-feu pfSense."
+        "description": "Configurer les options."
       },
       "device_tracker": {
-        "description": "Choisissez les appareils réseau que vous souhaitez suivre en tant que tracker d'appareil dans Home Assistant.",
+        "description": "Choisissez les appareils Ã  suivre.",
         "data": {
-          "devices": "Appareils à suivre"
+          "devices": "Appareils Ã  suivre"
+        }
+      }
+    }
+  },
+  "services": {
+    "update_alias": {
+      "name": "Mettre Ã  jour l'alias",
+      "description": "Ajouter/supprimer dynamiquement une IP/HÃ´te d'un alias.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity ID",
+          "description": "pfSense tracking entity id."
+        },
+        "alias_name": {
+          "name": "Nom de l'alias",
+          "description": "Name of the pfSense alias."
+        },
+        "address": {
+          "name": "Address",
+          "description": "Adresse IP cible"
+        },
+        "action": {
+          "name": "Action",
+          "description": "Add / Remove"
+        },
+        "kill_states": {
+          "name": "Kill States",
+          "description": "Instantly terminate target connections."
+        }
+      }
+    },
+    "toggle_dnsbl": {
+      "name": "Basculer pfBlockerNG DNSBL",
+      "description": "Activer/dÃ©sactiver instantanÃ©ment le blocage DNSBL.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity ID",
+          "description": "pfSense tracking entity id."
+        },
+        "action": {
+          "name": "Action",
+          "description": "Enable / Disable"
         }
       }
     }

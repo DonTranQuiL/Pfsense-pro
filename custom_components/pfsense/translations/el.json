@@ -1,17 +1,17 @@
 {
   "config": {
     "abort": {
-      "already_configured": "Η συσκευή έχει ήδη διαμορφωθεί"
+      "already_configured": "Η συσκευή έχει ήδη ρυθμιστεί"
     },
     "error": {
       "cannot_connect": "Αποτυχία σύνδεσης",
       "invalid_auth": "Μη έγκυρος έλεγχος ταυτότητας",
-      "unknown": "Μη αναμενόμενο σφάλμα",
+      "unknown": "Απροσδόκητο σφάλμα",
       "invalid_url_format": "Μη έγκυρη μορφή URL",
-      "privilege_missing": "Ο χρήστης δεν έχει επαρκή δικαιώματα (System - HA node sync)",
-      "connect_timeout": "Χρονικό όριο σύνδεσης",
-      "cannot_connect_ssl": "Αποτυχία SSL (Αυτο-υπογεγραμμένο πιστοποιητικό;)",
-      "url_redirect": "Εσφαλμένη URL (ανακατεύθυνση)"
+      "privilege_missing": "Ο χρήστης δεν έχει επαρκή δικαιώματα",
+      "connect_timeout": "Λήξη ορίου χρόνου σύνδεσης",
+      "cannot_connect_ssl": "Αποτυχία SSL",
+      "url_redirect": "Λανθασμένο URL (ανακατεύθυνση)"
     },
     "step": {
       "user": {
@@ -22,29 +22,71 @@
           "password": "Κωδικός πρόσβασης",
           "verify_ssl": "Επαλήθευση πιστοποιητικού SSL"
         },
-        "title": "Σύνδεση στο pfSense firewall / router"
+        "title": "Σύνδεση στο pfSense firewall"
       }
     }
   },
   "options": {
     "error": {
       "cannot_connect": "Αποτυχία σύνδεσης",
-      "unknown": "Μη αναμενόμενο σφάλμα"
+      "unknown": "Απροσδόκητο σφάλμα"
     },
     "step": {
       "init": {
         "data": {
-          "scan_interval": "Μεσοδιάστημα σάρωσης (δευτερόλεπτα)",
-          "device_tracker_enabled": "Ενεργοποίηση παρακολούθησης συσκευών",
-          "device_tracker_scan_interval": "Μεσοδιάστημα σάρωσης παρακολούθησης (δευτερόλεπτα)",
-          "device_tracker_consider_home": "Χρόνος αναμονής θεωρείται στο σπίτι (δευτερόλεπτα)"
+          "scan_interval": "Διάστημα σάρωσης (δευτερόλεπτα)",
+          "device_tracker_enabled": "Ενεργοποίηση παρακολούθησης",
+          "device_tracker_scan_interval": "Διάστημα παρακολούθησης (δευτ.)",
+          "device_tracker_consider_home": "Χρόνος στο σπίτι (δευτ.)"
         },
-        "description": "Διαμορφώστε τα γενικά μεσοδιαστήματα ελέγχου και τις ρυθμίσεις παρακολούθησης συσκευών για το pfSense firewall."
+        "description": "Διαμόρφωση επιλογών."
       },
       "device_tracker": {
-        "description": "Επιλέξτε ποιες συσκευές δικτύου θέλετε να παρακολουθείτε ως tracker συσκευής στο Home Assistant.",
+        "description": "Επιλέξτε συσκευές για παρακολούθηση.",
         "data": {
           "devices": "Συσκευές προς παρακολούθηση"
+        }
+      }
+    }
+  },
+  "services": {
+    "update_alias": {
+      "name": "Ενημέρωση Alias",
+      "description": "Δυναμική προσθήκη/αφαίρεση IP από μια ομάδα alias.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity ID",
+          "description": "pfSense tracking entity id."
+        },
+        "alias_name": {
+          "name": "Όνομα Alias",
+          "description": "Name of the pfSense alias."
+        },
+        "address": {
+          "name": "Address",
+          "description": "Διεύθυνση IP στόχου"
+        },
+        "action": {
+          "name": "Action",
+          "description": "Add / Remove"
+        },
+        "kill_states": {
+          "name": "Kill States",
+          "description": "Instantly terminate target connections."
+        }
+      }
+    },
+    "toggle_dnsbl": {
+      "name": "Εναλλαγή pfBlockerNG DNSBL",
+      "description": "Άμεση ενεργοποίηση ή απενεργοποίηση DNSBL.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity ID",
+          "description": "pfSense tracking entity id."
+        },
+        "action": {
+          "name": "Action",
+          "description": "Enable / Disable"
         }
       }
     }
