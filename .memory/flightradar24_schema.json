@@ -1,1 +1,0 @@
-["aircraft_code", "airline_iata", "airline_icao", "altitude", "callsign", "destination_airport_iata", "ground_speed", "heading", "icao_24bit", "id", "latitude", "longitude", "number", "on_ground", "origin_airport_iata", "registration", "squawk", "time", "vertical_speed"]
