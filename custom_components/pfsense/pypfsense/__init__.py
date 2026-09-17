@@ -97,7 +97,7 @@ class Client:
                 return func(*args, **kwargs)
             except BaseException as err:
                 _LOGGER.error(f"Unexpected {func.__name__} error {err=}, {type(err)=}")
-                raise err
+                raise
 
         return inner
 
@@ -509,7 +509,9 @@ $toreturn = [
         return response["data"]
 
     @_log_errors
-    def get_service_is_enabled(self, service_name, service={}):
+    def get_service_is_enabled(self, service_name, service=None):
+        if service is None:
+            service = {}
         service = normalize_service_data(service)
         script = """
 require_once '/etc/inc/util.inc';
@@ -528,7 +530,9 @@ $toreturn = [
         return response["data"]
 
     @_log_errors
-    def get_service_is_running(self, service_name, service={}):
+    def get_service_is_running(self, service_name, service=None):
+        if service is None:
+            service = {}
         service = normalize_service_data(service)
         script = """
 require_once '/etc/inc/util.inc';
@@ -570,7 +574,9 @@ else {{
         return response["data"]
 
     @_log_errors
-    def start_service(self, service_name, service={}):
+    def start_service(self, service_name, service=None):
+        if service is None:
+            service = {}
         service = normalize_service_data(service)
         script = """
 require_once '/etc/inc/service-utils.inc';
@@ -610,7 +616,9 @@ $toreturn = [
         self._exec_php(script)
 
     @_log_errors
-    def stop_service(self, service_name, service={}):
+    def stop_service(self, service_name, service=None):
+        if service is None:
+            service = {}
         service = normalize_service_data(service)
         script = """
 require_once '/etc/inc/service-utils.inc';
@@ -649,7 +657,9 @@ $toreturn = [
         self._exec_php(script)
 
     @_log_errors
-    def restart_service(self, service_name, service={}):
+    def restart_service(self, service_name, service=None):
+        if service is None:
+            service = {}
         service = normalize_service_data(service)
         script = """
 require_once '/etc/inc/service-utils.inc';
@@ -682,7 +692,9 @@ $toreturn = [
         self._exec_php(script)
 
     @_log_errors
-    def restart_service_if_running(self, service_name, service={}):
+    def restart_service_if_running(self, service_name, service=None):
+        if service is None:
+            service = {}
         service = normalize_service_data(service)
         script = """
 require_once '/etc/inc/service-utils.inc';

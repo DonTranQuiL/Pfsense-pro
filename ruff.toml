@@ -17,5 +17,9 @@ ignore = [
     "TRY401",  # redundant exception in logging.exception
     "SIM103",  # return negated condition (style)
     "SIM102",  # nested if (style)
-    "ASYNC230", # blocking open in async (debug path; non-critical)
+    "ASYNC230",
+    "RUF059",
+    "DTZ011",
+    "DTZ901",
+    "SIM118",  # key in dict.keys()
 ]

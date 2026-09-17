@@ -36,7 +36,9 @@ from .pypfsense import Client
 _LOGGER = logging.getLogger(__name__)
 
 
-def cleanse_sensitive_data(message, secrets=[]):
+def cleanse_sensitive_data(message, secrets=None):
+    if secrets is None:
+        secrets = []
     for secret in secrets:
         if secret is not None:
             message = message.replace(secret, "[redacted]")

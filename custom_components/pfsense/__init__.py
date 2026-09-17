@@ -248,8 +248,10 @@ class PfSenseData:
     def state(self):
         return self._state
 
-    def update(self, opts={}):
+    def update(self, opts=None):
         """Fetch the latest state from pfSense. Draait synchroon in executor."""
+        if opts is None:
+            opts = {}
         new_state = {}
 
         try:
@@ -431,9 +433,9 @@ class PfSenseData:
                             new_property = f"{prop}_kilobytes_per_second"
                             server[new_property] = int(round(rate / 1000, 0))
 
-        except BaseException as err:
+        except BaseException:
             self._state = new_state
-            raise err
+            raise
 
         self._state = new_state
         return new_state
@@ -545,7 +547,7 @@ class PfSenseEntity(CoordinatorEntity, RestoreEntity):
     def service_reset_state_table(self):
         self._get_pfsense_client().reset_state_table()
 
-    def service_kill_states(self, source: str, destination: str = None):
+    def service_kill_states(self, source: str, destination: str | None = None):
         self._get_pfsense_client().kill_states(source, destination)
 
     def service_system_halt(self):
