@@ -325,9 +325,9 @@ class PfSenseNatSwitch(PfSenseSwitch):
         tracker = self._pfsense_get_tracker()
         rule_type = self._pfsense_get_rule_type()
         if rule_type == "nat_port_forward":
-            rules = dict_get(state_for_rules, "config.nat.rule")
+            rules = dict_get(state, "config.nat.rule")
         elif rule_type == "nat_outbound":
-            rules = dict_get(state_for_rules, "config.nat.outbound.rule")
+            rules = dict_get(state, "config.nat.outbound.rule")
         else:
             rules = None
         if not isinstance(rules, list):
