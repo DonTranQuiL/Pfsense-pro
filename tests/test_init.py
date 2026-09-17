@@ -1,11 +1,12 @@
-import pytest
 from unittest.mock import MagicMock, patch
+
+import pytest
+from homeassistant.const import CONF_PASSWORD, CONF_URL, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.pfsense.const import DOMAIN
 from custom_components.pfsense import async_setup_entry, async_unload_entry
-from homeassistant.const import CONF_URL, CONF_USERNAME, CONF_PASSWORD
+from custom_components.pfsense.const import DOMAIN
 
 
 @pytest.fixture(autouse=True)

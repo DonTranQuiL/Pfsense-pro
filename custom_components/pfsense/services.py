@@ -1,11 +1,11 @@
 import logging
 
+import voluptuous as vol
 from homeassistant.core import HomeAssistant, ServiceCall, callback
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.entity_platform import async_get_platforms
 from homeassistant.helpers.service import entity_service_call
-import voluptuous as vol
 
 from .const import (
     DOMAIN,

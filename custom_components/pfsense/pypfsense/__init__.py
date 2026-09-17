@@ -8,9 +8,9 @@ import logging
 import re
 import socket
 import ssl
+import xmlrpc.client
 from urllib.parse import quote_plus, urlparse
 from xml.parsers.expat import ExpatError
-import xmlrpc.client
 
 # value to set as the socket timeout
 DEFAULT_TIMEOUT = 10
@@ -49,7 +49,7 @@ def normalize_service_data(service):
     return service
 
 
-class Client(object):
+class Client:
     """pfSense Client"""
 
     def __init__(self, url, username, password, opts=None):
@@ -62,12 +62,7 @@ class Client(object):
         self._password = password
         self._opts = opts
         parts = urlparse(url.rstrip("/") + "/xmlrpc.php")
-        self._url = "{scheme}://{username}:{password}@{host}/xmlrpc.php".format(
-            scheme=parts.scheme,
-            username=quote_plus(username),
-            password=quote_plus(password),
-            host=parts.netloc,
-        )
+        self._url = f"{parts.scheme}://{quote_plus(username)}:{quote_plus(password)}@{parts.netloc}/xmlrpc.php"
         self._url_parts = urlparse(self._url)
 
     def _get_proxy(self):
@@ -119,29 +114,29 @@ class Client(object):
 
     @_apply_timeout
     def _exec_php(self, script):
-        script = """
+        script = f"""
 ini_set('display_errors', 0);
 
-{}
+{script}
 
 $toreturn_real = $toreturn;
 $toreturn = [];
 $toreturn["real"] = json_encode($toreturn_real);
-""".format(script)
+"""
         response = self._get_proxy().pfsense.exec_php(script)
         response = json.loads(response["real"])
         return response
 
     def _exec_php_no_timeout(self, script):
-        script = """
+        script = f"""
 ini_set('display_errors', 0);
 
-{}
+{script}
 
 $toreturn_real = $toreturn;
 $toreturn = [];
 $toreturn["real"] = json_encode($toreturn_real);
-""".format(script)
+"""
         response = self._get_proxy().pfsense.exec_php(script)
         response = json.loads(response["real"])
         return response
@@ -881,7 +876,7 @@ $source = $data["source"];
 mwexec("/sbin/pfctl -k $source");
 """.format(json.dumps({"source": source}))
             self._exec_php(script)
-            return None
+            return
         else:
             script = """
 $data = json_decode('{}', true);
@@ -890,7 +885,7 @@ $destination = $data["destination"];
 mwexec("/sbin/pfctl -k $source -k $destination");
 """.format(json.dumps({"source": source, "destination": destination}))
             self._exec_php(script)
-            return None
+            return
 
     @_log_errors
     def system_reboot(self, type="normal"):

@@ -71,7 +71,7 @@ async def async_setup_entry(
                         config_entry,
                         coordinator,
                         SwitchEntityDescription(
-                            key="filter.{}".format(tracker),
+                            key=f"filter.{tracker}",
                             name="Filter Rule {} ({})".format(tracker, rule["descr"]),
                             icon=icon,
                             # entity_category=entity_category,
@@ -105,7 +105,7 @@ async def async_setup_entry(
                         config_entry,
                         coordinator,
                         SwitchEntityDescription(
-                            key="nat_port_forward.{}".format(tracker),
+                            key=f"nat_port_forward.{tracker}",
                             name="NAT Port Forward Rule {} ({})".format(
                                 tracker, rule["descr"]
                             ),
@@ -145,7 +145,7 @@ async def async_setup_entry(
                         config_entry,
                         coordinator,
                         SwitchEntityDescription(
-                            key="nat_outbound.{}".format(tracker),
+                            key=f"nat_outbound.{tracker}",
                             name="NAT Outbound Rule {} ({})".format(
                                 tracker, rule["descr"]
                             ),

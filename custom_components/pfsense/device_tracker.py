@@ -4,7 +4,8 @@ from __future__ import annotations
 
 import logging
 import time
-from typing import Any, Mapping
+from collections.abc import Mapping
+from typing import Any
 
 from homeassistant.components.device_tracker import SourceType
 from homeassistant.components.device_tracker.config_entry import ScannerEntity
@@ -13,6 +14,8 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import entity_platform
 from homeassistant.helpers.device_registry import (
     CONNECTION_NETWORK_MAC,
+)
+from homeassistant.helpers.device_registry import (
     async_get as async_get_dev_reg,
 )
 from homeassistant.helpers.entity import DeviceInfo

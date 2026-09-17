@@ -1,5 +1,5 @@
 import xmlrpc.client
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 from custom_components.pfsense.pypfsense import (
     Client,

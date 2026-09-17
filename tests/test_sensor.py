@@ -1,10 +1,11 @@
+from unittest.mock import MagicMock, PropertyMock, patch
+
 import pytest
-from unittest.mock import MagicMock, patch, PropertyMock
+from homeassistant.components.sensor import SensorEntityDescription
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.pfsense.const import DOMAIN
 from custom_components.pfsense.sensor import PfSenseOpenVPNServerSensor
-from homeassistant.components.sensor import SensorEntityDescription
 
 
 @pytest.fixture
