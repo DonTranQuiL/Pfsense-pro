@@ -22,4 +22,7 @@ ignore = [
     "DTZ011",
     "DTZ901",
     "SIM118",  # key in dict.keys()
+    "PERF102",
+    "S112",
+    "RUF012",
 ]
