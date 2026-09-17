@@ -284,9 +284,46 @@ class PfSenseData:
 
                 new_state["firmware_update_info"] = self._firmware_update_info
                 new_state["telemetry"] = telemetry_data
-                new_state["config"] = self._client.get_config()
+
+                # Full pfSense $config can legitimately come back as None (XML-RPC/
+                # json_encode edge cases, unset $config). Never store bare None —
+                # switches call .keys() on it. Prefer previous good config, else {}.
+                config = self._client.get_config()
+                if not isinstance(config, dict):
+                    previous_config = dict_get(previous_state, "config")
+                    if isinstance(previous_config, dict):
+                        _LOGGER.error(
+                            "get_config() returned %s; reusing previous config",
+                            type(config).__name__,
+                        )
+                        config = previous_config
+                    else:
+                        _LOGGER.error(
+                            "get_config() returned %s; using empty config "
+                            "(filter/NAT switches will be skipped until config arrives)",
+                            type(config).__name__,
+                        )
+                        config = {}
+                new_state["config"] = config
+
                 new_state["interfaces"] = self._client.get_interfaces()
-                new_state["services"] = self._client.get_services()
+
+                services = self._client.get_services()
+                if not isinstance(services, list):
+                    previous_services = dict_get(previous_state, "services")
+                    if isinstance(previous_services, list):
+                        _LOGGER.error(
+                            "get_services() returned %s; reusing previous services",
+                            type(services).__name__,
+                        )
+                        services = previous_services
+                    else:
+                        _LOGGER.error(
+                            "get_services() returned %s; using empty services list",
+                            type(services).__name__,
+                        )
+                        services = []
+                new_state["services"] = services
                 new_state["carp_interfaces"] = self._client.get_carp_interfaces()
                 new_state["carp_status"] = self._client.get_carp_status()
                 new_state["dhcp_leases"] = self._client.get_dhcp_leases(False)

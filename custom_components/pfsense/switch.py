@@ -31,13 +31,27 @@ async def async_setup_entry(
     def process_entities_callback(hass, config_entry):
         data = hass.data[DOMAIN][config_entry.entry_id]
         coordinator = data[COORDINATOR]
-        state = coordinator.data
+        state = coordinator.data or {}
 
         entities = []
 
+        config = state.get("config")
+        if not isinstance(config, dict):
+            # get_config() can return None (API/encoding/$config unset). Soft-fail so
+            # sensors keep working; CoordinatorEntityManager will re-add switches later.
+            _LOGGER.warning(
+                "pfSense config missing or null (got %s); skipping filter/NAT switches "
+                "until a valid config is available",
+                type(config).__name__,
+            )
+            config = {}
+
+        # Use normalized config for lookups (state["config"] may still be None).
+        state_for_rules = {**state, "config": config}
+
         # filter rules
-        if "filter" in state["config"].keys():
-            rules = dict_get(state, "config.filter.rule")
+        if "filter" in config:
+            rules = dict_get(state_for_rules, "config.filter.rule")
             if isinstance(rules, list):
                 for rule in rules:
                     if not isinstance(rule, dict):
@@ -82,8 +96,8 @@ async def async_setup_entry(
                     entities.append(entity)
 
         # nat port forward rules
-        if "nat" in state["config"].keys():
-            rules = dict_get(state, "config.nat.rule")
+        if "nat" in config:
+            rules = dict_get(state_for_rules, "config.nat.rule")
             if isinstance(rules, list):
                 for rule in rules:
                     if not isinstance(rule, dict):
@@ -118,9 +132,9 @@ async def async_setup_entry(
                     entities.append(entity)
 
         # nat outbound rules
-        if "nat" in state["config"].keys():
+        if "nat" in config:
             # to actually be applicable mode must by "hybrid" or "advanced"
-            rules = dict_get(state, "config.nat.outbound.rule")
+            rules = dict_get(state_for_rules, "config.nat.outbound.rule")
             if isinstance(rules, list):
                 for rule in rules:
                     if not isinstance(rule, dict):
@@ -158,7 +172,15 @@ async def async_setup_entry(
                     entities.append(entity)
 
         # services
-        for service in state["services"]:
+        services = state.get("services")
+        if not isinstance(services, list):
+            _LOGGER.warning(
+                "pfSense services missing or null (got %s); skipping service switches",
+                type(services).__name__,
+            )
+            services = []
+
+        for service in services:
             for property in ["status"]:
                 icon = "mdi:application-cog-outline"
                 # likely only want very specific services to manipulate from actions
@@ -233,11 +255,14 @@ class PfSenseFilterSwitch(PfSenseSwitch):
         return self.entity_description.key.split(".")[1]
 
     def _pfsense_get_rule(self):
-        state = self.coordinator.data
+        state = self.coordinator.data or {}
         found = None
         tracker = self._pfsense_get_tracker()
-        for rule in state["config"]["filter"]["rule"]:
-            if "tracker" not in rule.keys():
+        rules = dict_get(state, "config.filter.rule")
+        if not isinstance(rules, list):
+            return None
+        for rule in rules:
+            if not isinstance(rule, dict) or "tracker" not in rule:
                 continue
             if rule["tracker"] == tracker:
                 found = rule
@@ -295,15 +320,18 @@ class PfSenseNatSwitch(PfSenseSwitch):
         return self.entity_description.key.split(".")[1]
 
     def _pfsense_get_rule(self):
-        state = self.coordinator.data
+        state = self.coordinator.data or {}
         found = None
         tracker = self._pfsense_get_tracker()
         rule_type = self._pfsense_get_rule_type()
-        rules = []
         if rule_type == "nat_port_forward":
-            rules = state["config"]["nat"]["rule"]
-        if rule_type == "nat_outbound":
-            rules = state["config"]["nat"]["outbound"]["rule"]
+            rules = dict_get(state_for_rules, "config.nat.rule")
+        elif rule_type == "nat_outbound":
+            rules = dict_get(state_for_rules, "config.nat.outbound.rule")
+        else:
+            rules = None
+        if not isinstance(rules, list):
+            return None
 
         for rule in rules:
             if dict_get(rule, "created.time") == tracker:
@@ -370,10 +398,13 @@ class PfSenseServiceSwitch(PfSenseSwitch):
         return self.entity_description.key.split(".")[1]
 
     def _pfsense_get_service(self):
-        state = self.coordinator.data
+        state = self.coordinator.data or {}
         found = None
         service_name = self._pfsense_get_service_name()
-        for service in state["services"]:
+        services = state.get("services")
+        if not isinstance(services, list):
+            return None
+        for service in services:
             if service_name.startswith("openvpn"):
                 # [ "openvpn", "<vpnid>""]
                 parts = service_name.split("-")
