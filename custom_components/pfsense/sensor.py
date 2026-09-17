@@ -93,7 +93,7 @@ async def async_setup_entry(
                 coordinator,
                 SensorEntityDescription(
                     key=f"telemetry.filesystems.{device_clean}",
-                    name="Filesystem Used Percentage {}".format(mountpoint_clean),
+                    name=f"Filesystem Used Percentage {mountpoint_clean}",
                     native_unit_of_measurement=PERCENTAGE,
                     icon="mdi:harddisk",
                     state_class=SensorStateClass.MEASUREMENT,
@@ -293,7 +293,7 @@ async def async_setup_entry(
                     config_entry,
                     coordinator,
                     SensorEntityDescription(
-                        key="telemetry.openvpn.servers.{}.{}".format(vpnid, property),
+                        key=f"telemetry.openvpn.servers.{vpnid}.{property}",
                         name="OpenVPN Server {} ({}) {}".format(
                             vpnid, server["name"], property
                         ),

@@ -1,20 +1,20 @@
-import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
+import pytest
+from homeassistant.const import (
+    CONF_PASSWORD,
+    CONF_URL,
+    CONF_USERNAME,
+    CONF_VERIFY_SSL,
+)
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.pfsense.const import (
-    DOMAIN,
-    CONF_DEVICES,
     CONF_DEVICE_TRACKER_ENABLED,
-)
-from homeassistant.const import (
-    CONF_URL,
-    CONF_USERNAME,
-    CONF_PASSWORD,
-    CONF_VERIFY_SSL,
+    CONF_DEVICES,
+    DOMAIN,
 )
 
 # =========================================================================

@@ -1,7 +1,8 @@
+from unittest.mock import AsyncMock, MagicMock, PropertyMock, patch
+
 import pytest
-from unittest.mock import MagicMock, patch, AsyncMock, PropertyMock
-from pytest_homeassistant_custom_component.common import MockConfigEntry
 from homeassistant.components.switch import SwitchEntityDescription
+from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.pfsense.switch import PfSenseServiceSwitch
 

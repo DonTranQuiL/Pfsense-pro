@@ -1,9 +1,11 @@
 """Config flow for pfSense integration."""
 
 import logging
-from urllib.parse import quote_plus, urlparse
 import xmlrpc
+from urllib.parse import quote_plus, urlparse
 
+import homeassistant.helpers.config_validation as cv
+import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.const import (
     CONF_NAME,
@@ -14,9 +16,7 @@ from homeassistant.const import (
     CONF_VERIFY_SSL,
 )
 from homeassistant.core import callback
-import homeassistant.helpers.config_validation as cv
 from homeassistant.util import slugify
-import voluptuous as vol
 
 from .const import (
     CONF_DEVICE_TRACKER_CONSIDER_HOME,
@@ -36,7 +36,9 @@ from .pypfsense import Client
 _LOGGER = logging.getLogger(__name__)
 
 
-def cleanse_sensitive_data(message, secrets=[]):
+def cleanse_sensitive_data(message, secrets=None):
+    if secrets is None:
+        secrets = []
     for secret in secrets:
         if secret is not None:
             message = message.replace(secret, "[redacted]")
@@ -120,9 +122,9 @@ class ConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                     _LOGGER.error(message)
                     errors["base"] = "cannot_connect"
             except xmlrpc.client.ProtocolError as err:
-                if "307 Temporary Redirect" in str(err):
-                    errors["base"] = "url_redirect"
-                elif "301 Moved Permanently" in str(err):
+                if "307 Temporary Redirect" in str(
+                    err
+                ) or "301 Moved Permanently" in str(err):
                     errors["base"] = "url_redirect"
                 else:
                     message = cleanse_sensitive_data(

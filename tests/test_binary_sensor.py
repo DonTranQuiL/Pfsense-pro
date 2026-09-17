@@ -1,16 +1,16 @@
-import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
-from homeassistant.core import HomeAssistant
-from homeassistant.const import STATE_ON, STATE_OFF
+import pytest
 from homeassistant.components.binary_sensor import (
     BinarySensorDeviceClass,
     BinarySensorEntityDescription,
 )
+from homeassistant.const import STATE_OFF, STATE_ON
+from homeassistant.core import HomeAssistant
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.pfsense.const import DOMAIN, COORDINATOR
 from custom_components.pfsense.binary_sensor import PfSenseCarpStatusBinarySensor
+from custom_components.pfsense.const import COORDINATOR, DOMAIN
 
 
 @pytest.fixture

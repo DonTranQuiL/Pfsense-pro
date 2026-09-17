@@ -3,12 +3,12 @@
 from __future__ import annotations
 
 import copy
-from datetime import timedelta
 import logging
 import math
 import re
 import time
-from typing import Callable
+from collections.abc import Callable
+from datetime import timedelta
 
 import async_timeout
 from homeassistant.config_entries import ConfigEntry
@@ -22,12 +22,12 @@ from homeassistant.const import (
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.restore_state import RestoreEntity
+from homeassistant.helpers.storage import Store
 from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
     DataUpdateCoordinator,
     UpdateFailed,
 )
-from homeassistant.helpers.storage import Store
 
 from .const import (
     CONF_DEVICE_TRACKER_ENABLED,
@@ -226,9 +226,8 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
         version = config_entry.version
         tls_insecure = config_entry.data.get(CONF_TLS_INSECURE, DEFAULT_TLS_INSECURE)
         data = dict(config_entry.data)
-        if CONF_TLS_INSECURE in data.keys():
-            del data[CONF_TLS_INSECURE]
-        if CONF_VERIFY_SSL not in data.keys():
+        data.pop(CONF_TLS_INSECURE, None)
+        if CONF_VERIFY_SSL not in data:
             data[CONF_VERIFY_SSL] = not tls_insecure
         hass.config_entries.async_update_entry(config_entry, data=data)
     return True
@@ -249,8 +248,10 @@ class PfSenseData:
     def state(self):
         return self._state
 
-    def update(self, opts={}):
+    def update(self, opts=None):
         """Fetch the latest state from pfSense. Draait synchroon in executor."""
+        if opts is None:
+            opts = {}
         new_state = {}
 
         try:
@@ -432,9 +433,9 @@ class PfSenseData:
                             new_property = f"{prop}_kilobytes_per_second"
                             server[new_property] = int(round(rate / 1000, 0))
 
-        except BaseException as err:
+        except BaseException:
             self._state = new_state
-            raise err
+            raise
 
         self._state = new_state
         return new_state
@@ -546,7 +547,7 @@ class PfSenseEntity(CoordinatorEntity, RestoreEntity):
     def service_reset_state_table(self):
         self._get_pfsense_client().reset_state_table()
 
-    def service_kill_states(self, source: str, destination: str = None):
+    def service_kill_states(self, source: str, destination: str | None = None):
         self._get_pfsense_client().kill_states(source, destination)
 
     def service_system_halt(self):
