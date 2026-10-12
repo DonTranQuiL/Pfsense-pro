@@ -139,20 +139,21 @@ in real time.
 
 # Installation Instructions
 
-1. Connect to your Home Assistant file system (via SSH, Samba, or File Editor).
-2. Navigate to:
+1. Download the card file from this repo: [`www/pfsense-command-center.js`](https://github.com/DonTranQuiL/Pfsense-pro/blob/main/www/pfsense-command-center.js) ([raw download](https://raw.githubusercontent.com/DonTranQuiL/Pfsense-pro/main/www/pfsense-command-center.js)).
+2. Connect to your Home Assistant file system (via SSH, Samba, or File Editor).
+3. Copy the file to:
 
 ```text
-/config/www/
+/config/www/pfsense-command-center.js
 ```
 
-3. Create a new file named:
+   Or via SSH / Terminal in one go:
 
-```text
-pfsense-command-center.js
+```bash
+wget -O /config/www/pfsense-command-center.js https://raw.githubusercontent.com/DonTranQuiL/Pfsense-pro/main/www/pfsense-command-center.js
 ```
 
-4. Paste the frontend JavaScript code into the file.
+4. If `/config/www/` did not exist before, restart Home Assistant once so `/local/` is served.
 
 5. In Home Assistant navigate to:
 
