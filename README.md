@@ -42,9 +42,19 @@ Engineered for low-overhead edge networks, this platform allows you to execute o
 
 # 📥 Installation
 
-## Method 1: HACS (Recommended)
+## Method 1: Marketplace (Home Assistant 2026.11 and newer, recommended)
 
-The most efficient deployment method is through HACS (Home Assistant Community Store):
+[![Open your Home Assistant instance and open this repository in the Marketplace.](https://my.home-assistant.io/badges/marketplace_repository.svg)](https://my.home-assistant.io/redirect/marketplace_repository/?owner=DonTranQuiL&repository=Pfsense-pro&category=integration)
+
+1. In Home Assistant, go to **Settings > Marketplace** and search for **pfSense Pro** (or use the button above).
+2. Open it and select **Install**. The setup starts right away, no restart needed.
+3. Complete the setup form: URL, Username and Password.
+
+> **Not in the Marketplace catalog yet?** pfSense Pro is not in the HACS default list yet, so it does not show up in the Marketplace search. Until it is, select **Add from link** in the upper-right corner of the Marketplace, enter `https://github.com/DonTranQuiL/Pfsense-pro`, select **Add**, then open pfSense Pro and select **Install**.
+
+## Method 2: HACS (Home Assistant before 2026.11)
+
+On Home Assistant before 2026.11, install through HACS (Home Assistant Community Store):
 
 1. Open **HACS** in your sidebar and navigate into the **Integrations** panel.
 2. Click the three dots (`...`) located in the upper right quadrant and select **Custom repositories**.
@@ -72,7 +82,7 @@ Settings → Devices & Services → Add Integration
 
 ---
 
-## Method 2: Manual Installation
+## Method 3: Manual Installation
 
 1. Download the latest release from the Releases page.
 2. Extract the `pfsense` folder into your Home Assistant `custom_components` directory.
