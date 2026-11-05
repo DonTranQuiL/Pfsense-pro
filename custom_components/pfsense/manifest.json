@@ -1,6 +1,10 @@
 {
   "domain": "pfsense",
   "name": "pfSense",
+  "categories": [
+    "computers_network.routers_network",
+    "computers_network.monitoring"
+  ],
   "codeowners": [
     "@DonTranQuiL"
   ],
